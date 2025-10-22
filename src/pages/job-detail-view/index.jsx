@@ -51,9 +51,10 @@ const JobDetailView = () => {
             salary_min: data.salary_min,
             salary_max: data.salary_max,
             posted_date: data.created_at,
-            deadline: new Date(data.created_at).setDate(new Date(data.created_at).getDate() + 30), // 30 days from posted date
+            deadline: data.deadline || null, // Use deadline from database if set by admin
+            eligibility_criteria: data.eligibility_criteria || null, // Use eligibility criteria if set by admin
+            tags: data.tags || [], // Job tags for search and categorization
             remote_work: data.location?.toLowerCase().includes('remote'),
-            travel_required: data.location?.toLowerCase().includes('remote') ? 'None' : null,
             description: data.description || null,
             responsibilities: data.responsibilities || extractResponsibilities(data.description) || null,
             requirements: data.requirements || extractRequirements(data.description) || null,

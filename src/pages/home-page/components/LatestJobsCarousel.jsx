@@ -108,11 +108,14 @@ const LatestJobsCarousel = () => {
     const date = new Date(dateString);
     const now = new Date();
     const diffTime = Math.abs(now - date);
-    const diffHours = Math.ceil(diffTime / (1000 * 60 * 60));
+    const diffMinutes = Math.floor(diffTime / (1000 * 60));
+    const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
     
+    if (diffMinutes < 1) return 'Just now';
+    if (diffMinutes < 60) return `${diffMinutes}m ago`;
     if (diffHours < 24) return `${diffHours}h ago`;
-    if (diffHours < 48) return '1 day ago';
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    if (diffDays === 1) return '1 day ago';
     if (diffDays < 7) return `${diffDays} days ago`;
     return `${Math.floor(diffDays / 7)} weeks ago`;
   };
@@ -268,11 +271,9 @@ const LatestJobsCarousel = () => {
 
                       {/* Salary */}
                       <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                        {job.salary && (
-                          <div className="text-pink-600 font-semibold">
-                            {job.salary}
-                          </div>
-                        )}
+                        <div className="text-pink-600 font-semibold">
+                          {job.salary}
+                        </div>
                         <Icon name="ArrowRight" size={16} className="text-gray-400 group-hover:text-pink-600 transition-colors" />
                       </div>
                     </div>

@@ -4,6 +4,7 @@ import { Helmet } from 'react-helmet';
 import GlobalHeader from '../../components/ui/GlobalHeader';
 import Icon from '../../components/AppIcon';
 import { jobsApi, categoriesApi } from '../../lib/database.js';
+import { calculateSimilarity } from '../../utils/fuzzyMatch';
 
 const JobSearchResults = () => {
   const navigate = useNavigate();
@@ -46,7 +47,8 @@ const JobSearchResults = () => {
           employment_type: job.employment_type,
           experience_level: job.experience_level,
           salary_min: job.salary_min,
-          salary_max: job.salary_max
+          salary_max: job.salary_max,
+          tags: job.tags || []
         }));
         setJobs(transformedJobs);
         setRecentJobs(transformedJobs.slice(0, 5));
@@ -69,13 +71,21 @@ const JobSearchResults = () => {
     const category = searchParams.get('category');
     const experience = searchParams.get('experience');
     const type = searchParams.get('type');
+    const tag = searchParams.get('tag');
 
     if (query) {
-      filtered = filtered.filter(job =>
-        job.title.toLowerCase().includes(query.toLowerCase()) ||
-        job.description.toLowerCase().includes(query.toLowerCase()) ||
-        job.company.toLowerCase().includes(query.toLowerCase())
-      );
+      filtered = filtered.filter(job => {
+        const matchesTitle = job.title?.toLowerCase().includes(query.toLowerCase());
+        const matchesDesc = job.description?.toLowerCase().includes(query.toLowerCase());
+        const matchesCompany = job.company?.toLowerCase().includes(query.toLowerCase());
+        
+        // NEW: Fuzzy tag matching with typo tolerance (strict to avoid false matches)
+        const matchesTags = job.tags?.some(tag => 
+          calculateSimilarity(tag.toLowerCase(), query.toLowerCase()) >= 75
+        );
+        
+        return matchesTitle || matchesDesc || matchesCompany || matchesTags;
+      });
     }
 
     if (category) {
@@ -98,6 +108,20 @@ const JobSearchResults = () => {
           job.experience_level?.toLowerCase().includes('executive')
         );
       }
+    }
+
+    if (tag && tag.length > 0) {
+      // Filter jobs that have matching tags (case-insensitive)
+      filtered = filtered.filter(job => {
+        if (!job.tags || job.tags.length === 0) return false;
+        
+        const tagSlug = tag.toLowerCase();
+        return job.tags.some(jobTag => {
+          const jobTagSlug = jobTag.toLowerCase().replace(/\s+/g, '-');
+          return jobTagSlug === tagSlug || 
+                 jobTag.toLowerCase() === tagSlug.replace(/-/g, ' ');
+        });
+      });
     }
 
     if (type) {
@@ -218,7 +242,7 @@ const JobSearchResults = () => {
               </div>
 
               {/* Active Filters */}
-              {(searchParams.get('q') || searchParams.get('category') || searchParams.get('experience') || searchParams.get('type')) && (
+              {(searchParams.get('q') || searchParams.get('category') || searchParams.get('experience') || searchParams.get('type') || searchParams.get('tag')) && (
                 <div className="mb-6 bg-white rounded-lg p-4 border border-gray-200">
                   <div className="flex items-center justify-between flex-wrap gap-2">
                     <div className="flex items-center gap-2 flex-wrap">
@@ -242,6 +266,19 @@ const JobSearchResults = () => {
                         <span className="px-3 py-1 bg-pink-100 text-pink-700 rounded-full text-sm">
                           {searchParams.get('type')}
                         </span>
+                      )}
+                      {searchParams.get('tag') && (
+                        <button
+                          onClick={() => {
+                            searchParams.delete('tag');
+                            setSearchParams(searchParams);
+                          }}
+                          className="inline-flex items-center gap-1.5 px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm hover:bg-purple-200 transition-colors"
+                        >
+                          <Icon name="Tag" size={14} />
+                          <span>Tag: {searchParams.get('tag').replace(/-/g, ' ')}</span>
+                          <Icon name="X" size={14} />
+                        </button>
                       )}
                     </div>
                     <button

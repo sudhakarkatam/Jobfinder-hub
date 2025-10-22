@@ -23,6 +23,12 @@ const AdminNavigation = () => {
       description: 'Manage job postings'
     },
     {
+      label: 'Blog Management',
+      path: '/admin-blog-management',
+      icon: 'BookOpen',
+      description: 'Manage blog posts'
+    },
+    {
       label: 'Applications',
       path: '/admin-applications',
       icon: 'FileText',

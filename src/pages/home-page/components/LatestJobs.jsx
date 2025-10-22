@@ -60,10 +60,13 @@ const LatestJobs = () => {
     const date = new Date(dateString);
     const now = new Date();
     const diffTime = Math.abs(now - date);
-    const diffHours = Math.ceil(diffTime / (1000 * 60 * 60));
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const diffMinutes = Math.floor(diffTime / (1000 * 60));
+    const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
     
-    if (diffHours < 24) return `${diffHours} hours ago`;
+    if (diffMinutes < 1) return 'Just now';
+    if (diffMinutes < 60) return `${diffMinutes} ${diffMinutes === 1 ? 'minute' : 'minutes'} ago`;
+    if (diffHours < 24) return `${diffHours} ${diffHours === 1 ? 'hour' : 'hours'} ago`;
     if (diffDays === 1) return '1 day ago';
     if (diffDays < 7) return `${diffDays} days ago`;
     return `${Math.floor(diffDays / 7)} weeks ago`;
@@ -81,7 +84,7 @@ const LatestJobs = () => {
     const date = new Date(dateString);
     const now = new Date();
     const diffTime = Math.abs(now - date);
-    const diffHours = Math.ceil(diffTime / (1000 * 60 * 60));
+    const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
     return diffHours < 24;
   };
 
@@ -213,11 +216,9 @@ const LatestJobs = () => {
                     <Icon name="Clock" size={14} />
                     <span>{job?.type}</span>
                   </div>
-                  {job?.salary && (
-                    <div className="text-primary font-semibold">
-                      {job?.salary}
-                    </div>
-                  )}
+                  <div className="text-primary font-semibold">
+                    {job?.salary}
+                  </div>
                 </div>
               </div>
 

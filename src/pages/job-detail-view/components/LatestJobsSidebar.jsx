@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Icon from '../../../components/AppIcon';
 import Image from '../../../components/AppImage';
 import { jobsApi } from '../../../lib/database';
+import { formatSalary } from '../../../utils/formatSalary';
 
 const LatestJobsSidebar = ({ currentJobId }) => {
   const navigate = useNavigate();
@@ -24,13 +25,14 @@ const LatestJobsSidebar = ({ currentJobId }) => {
           .slice(0, 8)
           .map(job => ({
             id: job.id,
+            url_slug: job.url_slug,
             title: job.title,
             // Use company_name if available, otherwise fall back to companies.name
             company: job.company_name || job.companies?.name || 'Unknown Company',
             logo: job.companies?.logo || 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=100&h=100&fit=crop',
             location: job.location,
             type: job.employment_type,
-            salary: `$${job.salary_min?.toLocaleString()}-${job.salary_max?.toLocaleString()}`,
+            salary: formatSalary(job.salary_min, job.salary_max),
             postedDate: formatPostedDate(job.created_at)
           }));
         setLatestJobs(filtered);
@@ -46,15 +48,21 @@ const LatestJobsSidebar = ({ currentJobId }) => {
     const date = new Date(dateString);
     const now = new Date();
     const diffTime = Math.abs(now - date);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const diffMinutes = Math.floor(diffTime / (1000 * 60));
+    const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
     
+    if (diffMinutes < 1) return 'Just now';
+    if (diffMinutes < 60) return `${diffMinutes}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
     if (diffDays === 1) return '1d ago';
     if (diffDays < 7) return `${diffDays}d ago`;
     return `${Math.floor(diffDays / 7)}w ago`;
   };
 
-  const handleJobClick = (jobId) => {
-    navigate(`/job-detail-view/${jobId}`);
+  const handleJobClick = (job) => {
+    const slug = job.url_slug || job.id;
+    navigate(`/job-detail-view/${slug}`);
     window.scrollTo(0, 0);
   };
 
@@ -94,7 +102,7 @@ const LatestJobsSidebar = ({ currentJobId }) => {
           {latestJobs.map((job) => (
             <div
               key={job.id}
-              onClick={() => handleJobClick(job.id)}
+              onClick={() => handleJobClick(job)}
               className="group cursor-pointer p-3 rounded-lg hover:bg-pink-50 transition-all duration-200 border border-transparent hover:border-pink-200"
             >
               <div className="flex space-x-3">

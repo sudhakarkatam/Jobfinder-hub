@@ -78,6 +78,19 @@ export const jobsApi = {
       if (filters.salary_max) {
         query = query.lte('salary_max', filters.salary_max)
       }
+      if (filters.tag) {
+        // Filter jobs that contain the tag (case-insensitive array search)
+        // Convert tag slug back to possible tag formats for searching
+        const tagVariants = [
+          filters.tag,
+          filters.tag.replace(/-/g, ' '),
+          filters.tag.replace(/-/g, ' ').split(' ').map(word => 
+            word.charAt(0).toUpperCase() + word.slice(1)
+          ).join(' ')
+        ]
+        // Use overlaps operator to check if any variant exists in the tags array
+        query = query.overlaps('tags', tagVariants)
+      }
 
       const { data, error } = await query
       
@@ -547,19 +560,53 @@ export const applicationsApi = {
 // Categories table operations
 export const categoriesApi = {
   async getCategories() {
-    const cacheKey = 'categories'
+    const cacheKey = 'categories_with_counts'
     const cached = getCachedData(cacheKey)
     if (cached) return cached
 
     try {
-      const { data, error } = await supabase
-        .from('categories')
-        .select('*')
-        .order('name')
+      // Define all available categories
+      const allCategories = [
+        'Technology',
+        'Development',
+        'Design',
+        'Data Science',
+        'Marketing',
+        'Sales',
+        'Finance',
+        'Product',
+        'Healthcare',
+        'Banking Jobs',
+        'Government Jobs'
+      ]
+
+      // Get all jobs to count by category
+      const { data: jobs, error } = await supabase
+        .from('jobs')
+        .select('category')
       
       if (error) throw error
+
+      // Count jobs per category
+      const categoryCounts = {}
+      allCategories.forEach(cat => {
+        categoryCounts[cat] = 0
+      })
+
+      jobs.forEach(job => {
+        if (job.category && categoryCounts.hasOwnProperty(job.category)) {
+          categoryCounts[job.category]++
+        }
+      })
+
+      // Create category objects with counts
+      const categoriesWithCounts = allCategories.map((name, index) => ({
+        id: index + 1,
+        name: name,
+        job_count: categoryCounts[name] || 0
+      }))
       
-      const result = { data, error: null }
+      const result = { data: categoriesWithCounts, error: null }
       setCachedData(cacheKey, result)
       return result
     } catch (error) {
@@ -636,6 +683,216 @@ export const appSettingsApi = {
       return handleError(error, 'updateSetting')
     }
   }
+}
+
+// Blog Posts API
+export const blogsApi = {
+  // Get all blog posts with optional filters
+  async getPosts(filters = {}) {
+    const cacheKey = `blog_posts_${JSON.stringify(filters)}`
+    const cached = getCachedData(cacheKey)
+    if (cached) return cached
+
+    try {
+      console.log('🔍 Fetching blog posts with filters:', filters);
+      
+      let query = supabase
+        .from('blog_posts')
+        .select('*')
+        .order('published_at', { ascending: false })
+
+      // Apply filters
+      if (filters.category) {
+        query = query.eq('category', filters.category)
+      }
+      if (filters.status) {
+        query = query.eq('status', filters.status)
+      } else {
+        // By default, only show published posts for public
+        query = query.eq('status', 'published')
+      }
+      if (filters.tag) {
+        query = query.contains('tags', [filters.tag])
+      }
+      if (filters.search) {
+        query = query.or(`title.ilike.%${filters.search}%,content.ilike.%${filters.search}%`)
+      }
+      if (filters.limit) {
+        query = query.limit(filters.limit)
+      }
+
+      const { data, error } = await query
+      
+      if (error) {
+        console.error('❌ Blog posts query error:', error);
+        throw error;
+      }
+      
+      console.log(`✅ Fetched ${data?.length || 0} blog posts successfully`);
+      
+      const result = { data, error: null }
+      setCachedData(cacheKey, result)
+      return result
+    } catch (error) {
+      return handleError(error, 'getPosts')
+    }
+  },
+
+  // Get a single blog post by slug
+  async getPost(slug) {
+    const cacheKey = `blog_post_${slug}`
+    const cached = getCachedData(cacheKey)
+    if (cached) return cached
+
+    try {
+      console.log(`🔍 Fetching blog post: ${slug}`);
+      
+      const { data, error } = await supabase
+        .from('blog_posts')
+        .select('*')
+        .eq('slug', slug)
+        .single()
+      
+      if (error) {
+        console.error('❌ Blog post query error:', error);
+        throw error;
+      }
+      
+      // Increment view count
+      if (data) {
+        await supabase
+          .from('blog_posts')
+          .update({ views: (data.views || 0) + 1 })
+          .eq('id', data.id)
+      }
+      
+      console.log('✅ Blog post fetched successfully');
+      
+      const result = { data, error: null }
+      setCachedData(cacheKey, result)
+      return result
+    } catch (error) {
+      return handleError(error, 'getPost')
+    }
+  },
+
+  // Create a new blog post (admin only)
+  async createPost(postData) {
+    try {
+      console.log('🔍 Creating blog post:', postData.title);
+      
+      const { data, error } = await supabase
+        .from('blog_posts')
+        .insert([postData])
+        .select()
+        .single()
+      
+      if (error) {
+        console.error('❌ Create post error:', error);
+        throw error;
+      }
+      
+      // Clear cache
+      clearBlogCache()
+      
+      console.log('✅ Blog post created successfully');
+      return { data, error: null }
+    } catch (error) {
+      return handleError(error, 'createPost')
+    }
+  },
+
+  // Update an existing blog post (admin only)
+  async updatePost(id, postData) {
+    try {
+      console.log('🔍 Updating blog post:', id);
+      
+      const { data, error } = await supabase
+        .from('blog_posts')
+        .update(postData)
+        .eq('id', id)
+        .select()
+        .single()
+      
+      if (error) {
+        console.error('❌ Update post error:', error);
+        throw error;
+      }
+      
+      // Clear cache
+      clearBlogCache()
+      
+      console.log('✅ Blog post updated successfully');
+      return { data, error: null }
+    } catch (error) {
+      return handleError(error, 'updatePost')
+    }
+  },
+
+  // Delete a blog post (admin only)
+  async deletePost(id) {
+    try {
+      console.log('🔍 Deleting blog post:', id);
+      
+      const { error } = await supabase
+        .from('blog_posts')
+        .delete()
+        .eq('id', id)
+      
+      if (error) {
+        console.error('❌ Delete post error:', error);
+        throw error;
+      }
+      
+      // Clear cache
+      clearBlogCache()
+      
+      console.log('✅ Blog post deleted successfully');
+      return { data: null, error: null }
+    } catch (error) {
+      return handleError(error, 'deletePost')
+    }
+  },
+
+  // Get all blog categories
+  async getCategories() {
+    const cacheKey = 'blog_categories'
+    const cached = getCachedData(cacheKey)
+    if (cached) return cached
+
+    try {
+      console.log('🔍 Fetching blog categories');
+      
+      const { data, error } = await supabase
+        .from('blog_categories')
+        .select('*')
+        .order('name')
+      
+      if (error) {
+        console.error('❌ Blog categories query error:', error);
+        throw error;
+      }
+      
+      console.log(`✅ Fetched ${data?.length || 0} blog categories`);
+      
+      const result = { data, error: null }
+      setCachedData(cacheKey, result)
+      return result
+    } catch (error) {
+      return handleError(error, 'getBlogCategories')
+    }
+  }
+}
+
+// Clear blog cache
+const clearBlogCache = () => {
+  // Clear all blog-related cache entries
+  for (const key of cache.keys()) {
+    if (key.startsWith('blog_')) {
+      cache.delete(key)
+    }
+  }
+  console.log('🗑️ Blog cache cleared')
 }
 
 // Clear cache function

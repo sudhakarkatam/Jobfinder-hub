@@ -65,7 +65,7 @@ const HomePage = () => {
         {/* Footer */}
         <footer className="bg-surface border-t border-border mt-16">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {/* Company Info */}
               <div className="space-y-4">
                 <div className="flex items-center space-x-2">
@@ -101,17 +101,6 @@ const HomePage = () => {
                   <li><a href="#" className="hover:text-primary transition-micro">Create Profile</a></li>
                   <li><a href="#" className="hover:text-primary transition-micro">Job Alerts</a></li>
                   <li><a href="#" className="hover:text-primary transition-micro">Career Advice</a></li>
-                </ul>
-              </div>
-
-              {/* For Employers */}
-              <div className="space-y-4">
-                <h4 className="text-foreground font-semibold">For Employers</h4>
-                <ul className="space-y-2 text-sm text-text-secondary">
-                  <li><a href="#" className="hover:text-primary transition-micro">Post a Job</a></li>
-                  <li><a href="#" className="hover:text-primary transition-micro">Browse Candidates</a></li>
-                  <li><a href="#" className="hover:text-primary transition-micro">Pricing</a></li>
-                  <li><a href="#" className="hover:text-primary transition-micro">Recruitment Tools</a></li>
                 </ul>
               </div>
 

@@ -45,3 +45,13 @@ export const getJobSlug = (job) => {
   return job?.id || 'job';
 };
 
+/**
+ * Generate slug for blog posts or any content
+ * Alias for slugify without ID parameter
+ * @param {string} text - Text to convert to slug
+ * @returns {string} - URL-safe slug
+ */
+export const generateSlug = (text) => {
+  return slugify(text);
+};
+

@@ -190,24 +190,19 @@ const JobDescription = ({ job, onApply }) => {
               </span>
             </div>
             
-            <div className="flex justify-between">
-              <span className="text-text-secondary">Application Deadline:</span>
-              <span className="text-foreground font-medium">
-                {job?.deadline ? new Date(job.deadline)?.toLocaleDateString() : 'Not specified'}
-              </span>
-            </div>
+            {job?.deadline && (
+              <div className="flex justify-between">
+                <span className="text-text-secondary">Application Deadline:</span>
+                <span className="text-foreground font-medium">
+                  {new Date(job.deadline)?.toLocaleDateString()}
+                </span>
+              </div>
+            )}
             
             <div className="flex justify-between">
               <span className="text-text-secondary">Remote Work:</span>
               <span className="text-foreground font-medium">
                 {job?.remote_work ? 'Available' : 'Not Available'}
-              </span>
-            </div>
-            
-            <div className="flex justify-between">
-              <span className="text-text-secondary">Travel Required:</span>
-              <span className="text-foreground font-medium">
-                {job?.travel_required || 'None'}
               </span>
             </div>
           </div>

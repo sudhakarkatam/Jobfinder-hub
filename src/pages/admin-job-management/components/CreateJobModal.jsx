@@ -5,6 +5,17 @@ import Input from '../../../components/ui/Input';
 import Select from '../../../components/ui/Select';
 
 const CreateJobModal = ({ isOpen, onClose, onSave, editJob = null, isEditMode = false }) => {
+  // Predefined tags for quick selection
+  const PREDEFINED_TAGS = [
+    'Java Developer',
+    'Python Developer',
+    'Web Developer',
+    'React Developer',
+    'DevOps',
+    'Cloud',
+    'Web3'
+  ];
+
   const [formData, setFormData] = useState({
     title: '',
     url_slug: '',
@@ -20,6 +31,10 @@ const CreateJobModal = ({ isOpen, onClose, onSave, editJob = null, isEditMode = 
     responsibilities: '',
     benefits: '',
     apply_link: '',
+    deadline: '',
+    eligibility_criteria: '',
+    tags: [],
+    customTag: '',
     status: 'active',
     featured: false,
     urgent: false
@@ -46,6 +61,10 @@ const CreateJobModal = ({ isOpen, onClose, onSave, editJob = null, isEditMode = 
         responsibilities: editJob.responsibilities || '',
         benefits: editJob.benefits || '',
         apply_link: editJob.apply_link || '',
+        deadline: editJob.deadline || '',
+        eligibility_criteria: editJob.eligibility_criteria || '',
+        tags: editJob.tags || [],
+        customTag: '',
         status: editJob.status || 'active',
         featured: editJob.featured || false,
         urgent: editJob.urgent || false
@@ -67,6 +86,10 @@ const CreateJobModal = ({ isOpen, onClose, onSave, editJob = null, isEditMode = 
         responsibilities: '',
         benefits: '',
         apply_link: '',
+        deadline: '',
+        eligibility_criteria: '',
+        tags: [],
+        customTag: '',
         status: 'active',
         featured: false,
         urgent: false
@@ -125,6 +148,34 @@ const CreateJobModal = ({ isOpen, onClose, onSave, editJob = null, isEditMode = 
     }
   };
 
+  // Tag management handlers
+  const handleTagToggle = (tag, checked) => {
+    setFormData(prev => ({
+      ...prev,
+      tags: checked 
+        ? [...prev.tags, tag]
+        : prev.tags.filter(t => t !== tag)
+    }));
+  };
+
+  const handleAddCustomTag = () => {
+    const newTag = formData.customTag.trim();
+    if (newTag && !formData.tags.includes(newTag)) {
+      setFormData(prev => ({
+        ...prev,
+        tags: [...prev.tags, newTag],
+        customTag: ''
+      }));
+    }
+  };
+
+  const handleRemoveTag = (tagToRemove) => {
+    setFormData(prev => ({
+      ...prev,
+      tags: prev.tags.filter(tag => tag !== tagToRemove)
+    }));
+  };
+
   const validateForm = () => {
     const newErrors = {};
 
@@ -165,6 +216,9 @@ const CreateJobModal = ({ isOpen, onClose, onSave, editJob = null, isEditMode = 
         responsibilities: formData.responsibilities || null,
         benefits: formData.benefits || null,
         apply_link: formData.apply_link || null,
+        deadline: formData.deadline || null,
+        eligibility_criteria: formData.eligibility_criteria?.trim() || null,
+        tags: formData.tags.length > 0 ? formData.tags : null,
         status: formData.status,
         featured: formData.featured,
         urgent: formData.urgent
@@ -220,6 +274,10 @@ const CreateJobModal = ({ isOpen, onClose, onSave, editJob = null, isEditMode = 
       responsibilities: '',
       benefits: '',
       apply_link: '',
+      deadline: '',
+      eligibility_criteria: '',
+      tags: [],
+      customTag: '',
       status: 'active',
       featured: false,
       urgent: false
@@ -373,6 +431,139 @@ const CreateJobModal = ({ isOpen, onClose, onSave, editJob = null, isEditMode = 
               </div>
               <p className="text-xs text-text-secondary">
                 You can enter numbers (e.g., 80000), formatted text (e.g., $80k-$120k), or leave blank if salary is not disclosed.
+              </p>
+            </div>
+
+            {/* Application Deadline */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-foreground">
+                Application Deadline 
+                <span className="text-xs text-text-secondary ml-2">(Optional)</span>
+              </h3>
+              
+              <Input
+                label="Application Deadline (Optional)"
+                type="date"
+                placeholder="Select deadline date"
+                value={formData?.deadline}
+                onChange={(e) => handleInputChange('deadline', e?.target?.value)}
+                error={errors?.deadline}
+              />
+              <p className="text-xs text-text-secondary">
+                Set a deadline for applications. Leave blank if not applicable. Only visible when set.
+              </p>
+            </div>
+
+            {/* Eligibility Criteria */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-foreground">
+                Eligibility Criteria 
+                <span className="text-xs text-text-secondary ml-2">(Optional)</span>
+              </h3>
+              
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  Eligibility Requirements (Optional)
+                </label>
+                <textarea
+                  placeholder="e.g., 2024 batch eligible, Age 18-25 years, Open to all candidates"
+                  value={formData?.eligibility_criteria}
+                  onChange={(e) => handleInputChange('eligibility_criteria', e?.target?.value)}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-border rounded-md bg-input text-foreground placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-micro"
+                />
+                <p className="mt-1 text-xs text-text-secondary">
+                  Specify batch eligibility, age requirements, or any special criteria. This will be shown in job detail view.
+                </p>
+              </div>
+            </div>
+
+            {/* Job Tags */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-foreground">
+                Job Tags 
+                <span className="text-xs text-text-secondary ml-2">(Optional)</span>
+              </h3>
+              
+              {/* Predefined Tags - Checkboxes */}
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-3">
+                  Select Predefined Tags
+                </label>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {PREDEFINED_TAGS.map(tag => (
+                    <label key={tag} className="flex items-center space-x-2 cursor-pointer hover:bg-muted/50 p-2 rounded transition-colors">
+                      <input
+                        type="checkbox"
+                        checked={formData.tags.includes(tag)}
+                        onChange={(e) => handleTagToggle(tag, e.target.checked)}
+                        className="w-4 h-4 text-primary border-border rounded focus:ring-primary"
+                      />
+                      <span className="text-sm text-foreground">{tag}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+              
+              {/* Custom Tags Input */}
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  Add Custom Tag
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="e.g., Full Stack Developer, Angular, Node.js"
+                    value={formData.customTag}
+                    onChange={(e) => handleInputChange('customTag', e.target.value)}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleAddCustomTag();
+                      }
+                    }}
+                    className="flex-1 px-3 py-2 border border-border rounded-md bg-input text-foreground placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-micro"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleAddCustomTag}
+                    disabled={!formData.customTag.trim()}
+                  >
+                    Add Tag
+                  </Button>
+                </div>
+              </div>
+              
+              {/* Selected Tags Display */}
+              {formData.tags.length > 0 && (
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-2">
+                    Selected Tags ({formData.tags.length})
+                  </label>
+                  <div className="flex flex-wrap gap-2 p-3 bg-muted rounded-md">
+                    {formData.tags.map(tag => (
+                      <span
+                        key={tag}
+                        className="inline-flex items-center space-x-1 px-3 py-1.5 bg-primary/10 text-primary rounded-full text-sm font-medium"
+                      >
+                        <span>{tag}</span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveTag(tag)}
+                          className="hover:text-error transition-colors ml-1"
+                          title="Remove tag"
+                        >
+                          <Icon name="X" size={14} />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              <p className="text-xs text-text-secondary">
+                Select predefined tags or add custom ones. Tags help job seekers find relevant positions and improve search results.
               </p>
             </div>
 

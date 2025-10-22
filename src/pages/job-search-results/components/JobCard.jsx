@@ -31,10 +31,38 @@ const JobCard = ({ job, onBookmark, onShare }) => {
   };
 
   const formatSalary = (min, max) => {
-    if (!min && !max) return 'Salary not specified';
-    if (min && max) return `$${min?.toLocaleString()} - $${max?.toLocaleString()}`;
-    if (min) return `From $${min?.toLocaleString()}`;
-    return `Up to $${max?.toLocaleString()}`;
+    // Convert to strings and check if valid
+    const minStr = min ? String(min).trim() : '';
+    const maxStr = max ? String(max).trim() : '';
+    
+    // If both are empty, return "Salary not disclosed"
+    if (!minStr && !maxStr) return 'Salary not disclosed';
+    
+    // Handle text salary (e.g., "$80k-$120k", "Negotiable")
+    if (minStr && isNaN(Number(minStr))) {
+      if (maxStr && isNaN(Number(maxStr))) {
+        return `${minStr} - ${maxStr}`;
+      }
+      return minStr;
+    }
+    
+    // Handle numeric salary
+    if (minStr && maxStr) {
+      const minNum = Number(minStr);
+      const maxNum = Number(maxStr);
+      if (!isNaN(minNum) && !isNaN(maxNum)) {
+        return `$${minNum.toLocaleString()} - $${maxNum.toLocaleString()}`;
+      }
+    }
+    if (minStr) {
+      const minNum = Number(minStr);
+      return !isNaN(minNum) ? `From $${minNum.toLocaleString()}` : minStr;
+    }
+    if (maxStr) {
+      const maxNum = Number(maxStr);
+      return !isNaN(maxNum) ? `Up to $${maxNum.toLocaleString()}` : maxStr;
+    }
+    return 'Salary not disclosed';
   };
 
   const getTimeAgo = (date) => {

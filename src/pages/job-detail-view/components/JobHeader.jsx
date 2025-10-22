@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import Icon from '../../../components/AppIcon';
 import Image from '../../../components/AppImage';
 import Button from '../../../components/ui/Button';
@@ -27,45 +28,53 @@ const JobHeader = ({ job, onApply, onBookmark, isBookmarked }) => {
   };
 
   const formatSalary = (min, max) => {
-    // Return null if no salary data - will hide the section
-    if (!min && !max) return null;
+    // Convert to strings and check if valid
+    const minStr = min ? String(min).trim() : '';
+    const maxStr = max ? String(max).trim() : '';
+    
+    // If both are empty, return "Salary not disclosed"
+    if (!minStr && !maxStr) return 'Salary not disclosed';
     
     // Handle text salary (e.g., "$80k-$120k", "Negotiable")
     // If it's already formatted text, just display it
-    if (min && isNaN(Number(min))) {
+    if (minStr && isNaN(Number(minStr))) {
       // Text salary - display as is
-      if (max && isNaN(Number(max))) {
-        return `${min} - ${max}`;
+      if (maxStr && isNaN(Number(maxStr))) {
+        return `${minStr} - ${maxStr}`;
       }
-      return min;
+      return minStr;
     }
     
     // Handle numeric salary
-    if (min && max) {
-      const minNum = Number(min);
-      const maxNum = Number(max);
+    if (minStr && maxStr) {
+      const minNum = Number(minStr);
+      const maxNum = Number(maxStr);
       if (!isNaN(minNum) && !isNaN(maxNum)) {
         return `$${minNum.toLocaleString()} - $${maxNum.toLocaleString()}`;
       }
     }
-    if (min) {
-      const minNum = Number(min);
-      return !isNaN(minNum) ? `From $${minNum.toLocaleString()}` : min;
+    if (minStr) {
+      const minNum = Number(minStr);
+      return !isNaN(minNum) ? `From $${minNum.toLocaleString()}` : minStr;
     }
-    if (max) {
-      const maxNum = Number(max);
-      return !isNaN(maxNum) ? `Up to $${maxNum.toLocaleString()}` : max;
+    if (maxStr) {
+      const maxNum = Number(maxStr);
+      return !isNaN(maxNum) ? `Up to $${maxNum.toLocaleString()}` : maxStr;
     }
-    return null;
+    return 'Salary not disclosed';
   };
 
   const getTimeAgo = (date) => {
     const now = new Date();
     const posted = new Date(date);
-    const diffInHours = Math.floor((now - posted) / (1000 * 60 * 60));
+    const diffTime = now - posted;
+    const diffInMinutes = Math.floor(diffTime / (1000 * 60));
+    const diffInHours = Math.floor(diffTime / (1000 * 60 * 60));
+    const diffInDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
     
+    if (diffInMinutes < 1) return 'Just now';
+    if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
     if (diffInHours < 24) return `${diffInHours}h ago`;
-    const diffInDays = Math.floor(diffInHours / 24);
     if (diffInDays < 7) return `${diffInDays}d ago`;
     const diffInWeeks = Math.floor(diffInDays / 7);
     return `${diffInWeeks}w ago`;
@@ -121,12 +130,42 @@ const JobHeader = ({ job, onApply, onBookmark, isBookmarked }) => {
               </span>
             </div>
 
-            {/* Salary - Only show if available */}
-            {formatSalary(job?.salary_min, job?.salary_max) && (
-              <div className="text-lg font-semibold text-foreground mb-4">
+            {/* Salary - Always show */}
+            <div className="mb-4">
+              <div className="text-lg font-semibold text-foreground">
                 {formatSalary(job?.salary_min, job?.salary_max)}
               </div>
-            )}
+              
+              {/* Eligibility Criteria - Only show if set */}
+              {job?.eligibility_criteria && (
+                <div className="mt-2 inline-flex items-center space-x-2 bg-accent/10 text-accent px-3 py-1.5 rounded-md text-sm">
+                  <Icon name="CheckCircle2" size={16} />
+                  <span className="font-medium">Eligibility:</span>
+                  <span>{job.eligibility_criteria}</span>
+                </div>
+              )}
+              
+              {/* Job Tags - Only show if set */}
+              {job?.tags && job.tags.length > 0 && (
+                <div className="mt-3">
+                  <div className="flex flex-wrap gap-2">
+                    {job.tags.map(tag => {
+                      const tagSlug = tag.toLowerCase().replace(/\s+/g, '-');
+                      return (
+                        <Link
+                          key={tag}
+                          to={`/job-search-results?tag=${tagSlug}`}
+                          className="inline-flex items-center px-3 py-1.5 bg-secondary/10 text-secondary rounded-full text-sm font-medium hover:bg-secondary/20 transition-colors"
+                        >
+                          <Icon name="Tag" size={14} className="mr-1" />
+                          {tag}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 

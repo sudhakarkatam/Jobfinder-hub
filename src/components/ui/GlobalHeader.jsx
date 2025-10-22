@@ -2,7 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import Icon from '../AppIcon';
 import Button from './Button';
-import { categoriesApi } from '../../lib/database';
+import { categoriesApi, jobsApi } from '../../lib/database';
+import { calculateSimilarity, extractUniqueTags } from '../../utils/fuzzyMatch';
 
 
 const GlobalHeader = () => {
@@ -94,6 +95,7 @@ const GlobalHeader = () => {
         { label: 'Internships', path: '/job-search-results?type=internship', icon: 'Users' }
       ]
     },
+    { label: 'Blog', path: '/blog', icon: 'BookOpen' },
     { label: 'AI Resume Builder', path: '/resume-builder', icon: 'Sparkles' },
   ];
 
@@ -117,24 +119,47 @@ const GlobalHeader = () => {
 
   useEffect(() => {
     if (searchQuery?.length > 1) {
-      // Get real job titles and companies from database
-      const uniqueSuggestions = new Set();
+      // Get real job titles, companies, and tags from database
+      const uniqueSuggestions = new Map(); // Use Map to store with type indicator
+      const query = searchQuery.toLowerCase();
       
       allJobs.forEach(job => {
-        const query = searchQuery.toLowerCase();
-        
         // Add job title if matches
         if (job.title?.toLowerCase().includes(query)) {
-          uniqueSuggestions.add(job.title);
+          uniqueSuggestions.set(job.title, { text: job.title, type: 'job' });
         }
         
         // Add company name if matches
         if (job.companies?.name?.toLowerCase().includes(query)) {
-          uniqueSuggestions.add(job.companies.name);
+          uniqueSuggestions.set(job.companies.name, { text: job.companies.name, type: 'company' });
+        }
+        
+        // Add tags with fuzzy matching (typo tolerance)
+        if (job.tags && Array.isArray(job.tags)) {
+          job.tags.forEach(tag => {
+            const similarity = calculateSimilarity(query, tag);
+            // Match with 75% similarity or higher (stricter to avoid false matches)
+            if (similarity >= 75) {
+              uniqueSuggestions.set(`tag:${tag}`, { text: tag, type: 'tag', similarity });
+            }
+          });
         }
       });
       
-      const filtered = Array.from(uniqueSuggestions).slice(0, 5);
+      // Convert Map to array and sort (tags first if high similarity, then others)
+      const filtered = Array.from(uniqueSuggestions.values())
+        .sort((a, b) => {
+          // Prioritize exact tag matches
+          if (a.type === 'tag' && b.type !== 'tag') return -1;
+          if (a.type !== 'tag' && b.type === 'tag') return 1;
+          // Sort tags by similarity
+          if (a.type === 'tag' && b.type === 'tag') {
+            return (b.similarity || 0) - (a.similarity || 0);
+          }
+          return 0;
+        })
+        .slice(0, 6);
+      
       setSearchSuggestions(filtered);
       setShowSuggestions(filtered.length > 0);
     } else {
@@ -324,12 +349,26 @@ const GlobalHeader = () => {
                   {searchSuggestions?.map((suggestion, index) => (
                     <button
                       key={index}
-                      onClick={() => handleSuggestionClick(suggestion)}
+                      onClick={() => handleSuggestionClick(typeof suggestion === 'string' ? suggestion : suggestion.text)}
                       className="w-full px-4 py-2 text-left text-sm text-foreground hover:bg-muted transition-micro first:rounded-t-md last:rounded-b-md"
                     >
-                      <div className="flex items-center space-x-2">
-                        <Icon name="Search" size={14} className="text-text-secondary" />
-                        <span>{suggestion}</span>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          {typeof suggestion === 'object' && suggestion.type === 'tag' ? (
+                            <Icon name="Tag" size={14} className="text-secondary" />
+                          ) : typeof suggestion === 'object' && suggestion.type === 'company' ? (
+                            <Icon name="Building2" size={14} className="text-text-secondary" />
+                          ) : (
+                            <Icon name="Briefcase" size={14} className="text-text-secondary" />
+                          )}
+                          <span>{typeof suggestion === 'string' ? suggestion : suggestion.text}</span>
+                        </div>
+                        {typeof suggestion === 'object' && suggestion.type === 'tag' && (
+                          <span className="text-xs text-text-secondary">Tag</span>
+                        )}
+                        {typeof suggestion === 'object' && suggestion.type === 'company' && (
+                          <span className="text-xs text-text-secondary">Company</span>
+                        )}
                       </div>
                     </button>
                   ))}
