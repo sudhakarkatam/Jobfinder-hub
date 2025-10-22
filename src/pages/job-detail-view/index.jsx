@@ -41,7 +41,8 @@ const JobDetailView = () => {
             id: data.id,
             url_slug: data.url_slug,
             title: data.title,
-            company: data.companies?.name || 'Unknown Company',
+            // Use company_name if available, otherwise fall back to companies.name
+            company: data.company_name || data.companies?.name || 'Unknown Company',
             company_logo: data.companies?.logo || 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=200&h=200&fit=crop&crop=center',
             location: data.location,
             employment_type: data.employment_type,
@@ -77,7 +78,8 @@ const JobDetailView = () => {
                 id: j.id,
                 url_slug: j.url_slug,
                 title: j.title,
-                company: j.companies?.name || 'Unknown Company',
+                // Use company_name if available, otherwise fall back to companies.name
+                company: j.company_name || j.companies?.name || 'Unknown Company',
                 company_logo: j.companies?.logo || 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=200&h=200&fit=crop&crop=center',
                 location: j.location,
                 employment_type: j.employment_type,

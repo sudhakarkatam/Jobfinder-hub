@@ -33,7 +33,8 @@ const LatestJobs = () => {
           id: job.id,
           url_slug: job.url_slug,
           title: job.title,
-          company: job.companies?.name || 'Unknown Company',
+          // Use company_name if available, otherwise fall back to companies.name
+          company: job.company_name || job.companies?.name || 'Unknown Company',
           location: job.location,
           type: job.employment_type,
           salary: formatSalary(job.salary_min, job.salary_max),

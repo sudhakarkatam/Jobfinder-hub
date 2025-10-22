@@ -25,7 +25,8 @@ const LatestJobsSidebar = ({ currentJobId }) => {
           .map(job => ({
             id: job.id,
             title: job.title,
-            company: job.companies?.name || 'Unknown Company',
+            // Use company_name if available, otherwise fall back to companies.name
+            company: job.company_name || job.companies?.name || 'Unknown Company',
             logo: job.companies?.logo || 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=100&h=100&fit=crop',
             location: job.location,
             type: job.employment_type,

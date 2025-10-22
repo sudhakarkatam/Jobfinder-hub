@@ -37,7 +37,8 @@ const JobSearchResults = () => {
         const transformedJobs = jobsResult.data.map(job => ({
           id: job.id,
           title: job.title,
-          company: job.companies?.name || 'Unknown Company',
+          // Use company_name if available, otherwise fall back to companies.name
+          company: job.company_name || job.companies?.name || 'Unknown Company',
           description: job.description,
           created_at: job.created_at,
           category: job.category,

@@ -48,7 +48,8 @@ const AdminJobManagement = () => {
             id: job.id,
             title: job.title,
             url_slug: job.url_slug,
-            company: job.companies?.name || 'Unknown Company',
+            // Use company_name if available, otherwise fall back to companies.name
+            company: job.company_name || job.companies?.name || 'Unknown Company',
             category: job.category,
             location: job.location,
             type: job.employment_type,
