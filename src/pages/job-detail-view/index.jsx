@@ -54,6 +54,7 @@ const JobDetailView = () => {
             deadline: data.deadline || null, // Use deadline from database if set by admin
             eligibility_criteria: data.eligibility_criteria || null, // Use eligibility criteria if set by admin
             tags: data.tags || [], // Job tags for search and categorization
+            batch: data.batch || [], // Batch eligibility years
             remote_work: data.location?.toLowerCase().includes('remote'),
             description: data.description || null,
             responsibilities: data.responsibilities || extractResponsibilities(data.description) || null,

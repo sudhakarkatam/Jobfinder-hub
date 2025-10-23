@@ -4,15 +4,22 @@ import { Helmet } from 'react-helmet';
 import { motion } from 'framer-motion';
 import GlobalHeader from '../../components/ui/GlobalHeader';
 import Icon from '../../components/AppIcon';
-import { categoriesApi } from '../../lib/database';
+import { categoriesApi, jobsApi } from '../../lib/database';
 
 const JobCategories = () => {
   const navigate = useNavigate();
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [batchCounts, setBatchCounts] = useState({
+    '2024': 0,
+    '2025': 0,
+    '2026': 0,
+    '2027': 0
+  });
 
   useEffect(() => {
     fetchCategories();
+    fetchBatchCounts();
   }, []);
 
   const fetchCategories = async () => {
@@ -51,6 +58,36 @@ const JobCategories = () => {
       console.error('Error fetching categories:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchBatchCounts = async () => {
+    try {
+      const { data, error } = await jobsApi.getJobs();
+      
+      if (!error && data) {
+        const batches = {
+          '2024': 0,
+          '2025': 0,
+          '2026': 0,
+          '2027': 0
+        };
+
+        data.forEach(job => {
+          // Count jobs by batch
+          if (job.batch && Array.isArray(job.batch)) {
+            job.batch.forEach(year => {
+              if (batches[year] !== undefined) {
+                batches[year]++;
+              }
+            });
+          }
+        });
+
+        setBatchCounts(batches);
+      }
+    } catch (err) {
+      console.error('Error loading batch counts:', err);
     }
   };
 
@@ -99,6 +136,80 @@ const JobCategories = () => {
                 <p className="text-lg text-text-secondary max-w-2xl mx-auto">
                   Find your perfect opportunity in your field of expertise
                 </p>
+              </motion.div>
+            </div>
+          </section>
+
+          {/* Jobs by Batch Section */}
+          <section className="py-16 bg-muted/20">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              {/* Header */}
+              <div className="text-center mb-12">
+                <h2 className="text-3xl font-bold text-foreground mb-2">
+                  Jobs by Batch
+                </h2>
+                <p className="text-text-secondary">
+                  Find opportunities tailored for your graduation year
+                </p>
+              </div>
+
+              {/* Batch Cards Grid */}
+              <motion.div
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+              >
+                {[
+                  { id: '2024', name: '2024 Batch', gradient: 'from-pink-500 to-pink-600', iconBg: 'bg-pink-100', iconColor: 'text-pink-600' },
+                  { id: '2025', name: '2025 Batch', gradient: 'from-indigo-500 to-indigo-600', iconBg: 'bg-indigo-100', iconColor: 'text-indigo-600' },
+                  { id: '2026', name: '2026 Batch', gradient: 'from-teal-500 to-teal-600', iconBg: 'bg-teal-100', iconColor: 'text-teal-600' },
+                  { id: '2027', name: '2027 Batch', gradient: 'from-amber-500 to-amber-600', iconBg: 'bg-amber-100', iconColor: 'text-amber-600' }
+                ].map((batch) => (
+                  <motion.div
+                    key={batch.id}
+                    variants={itemVariants}
+                    onClick={() => navigate(`/tag/${batch.id}-batch`)}
+                    className="group relative bg-surface border border-border rounded-xl p-6 hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden"
+                    whileHover={{ y: -5, scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    {/* Gradient Background on Hover */}
+                    <div className={`absolute inset-0 bg-gradient-to-br ${batch.gradient} opacity-0 group-hover:opacity-5 transition-opacity duration-300`}></div>
+                    
+                    {/* Content */}
+                    <div className="relative z-10">
+                      {/* Icon */}
+                      <div className={`${batch.iconBg} w-16 h-16 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
+                        <Icon 
+                          name="Calendar" 
+                          size={28} 
+                          className={batch.iconColor}
+                        />
+                      </div>
+
+                      {/* Batch Name */}
+                      <h3 className="text-lg font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
+                        {batch.name}
+                      </h3>
+
+                      {/* Job Count */}
+                      <div className="flex items-center justify-between">
+                        <span className="text-text-secondary text-sm">
+                          {batchCounts[batch.id]} {batchCounts[batch.id] === 1 ? 'job' : 'jobs'}
+                        </span>
+                        <Icon 
+                          name="ArrowRight" 
+                          size={18} 
+                          className="text-text-secondary group-hover:text-primary group-hover:translate-x-1 transition-all duration-300"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Shine Effect */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
+                  </motion.div>
+                ))}
               </motion.div>
             </div>
           </section>

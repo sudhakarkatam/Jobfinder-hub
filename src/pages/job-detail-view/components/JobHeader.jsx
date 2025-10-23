@@ -145,19 +145,45 @@ const JobHeader = ({ job, onApply, onBookmark, isBookmarked }) => {
                 </div>
               )}
               
+              {/* Batch Eligibility - Only show if set */}
+              {job?.batch && job.batch.length > 0 && (
+                <div className="mt-3">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <Icon name="GraduationCap" size={16} className="text-primary" />
+                    <span className="text-sm font-semibold text-foreground">Batch Eligible:</span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {job.batch.sort().map(year => (
+                      <Link
+                        key={year}
+                        to={`/tag/${year}-batch`}
+                        className="inline-flex items-center px-3 py-1.5 bg-gradient-to-r from-indigo-500/10 to-purple-500/10 border border-indigo-500/20 text-indigo-700 rounded-full text-sm font-semibold hover:from-indigo-500/20 hover:to-purple-500/20 transition-all"
+                      >
+                        <Icon name="Calendar" size={14} className="mr-1" />
+                        {year} Batch
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
               {/* Job Tags - Only show if set */}
               {job?.tags && job.tags.length > 0 && (
                 <div className="mt-3">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <Icon name="Tag" size={16} className="text-secondary" />
+                    <span className="text-sm font-semibold text-foreground">Tags:</span>
+                  </div>
                   <div className="flex flex-wrap gap-2">
                     {job.tags.map(tag => {
                       const tagSlug = tag.toLowerCase().replace(/\s+/g, '-');
                       return (
                         <Link
                           key={tag}
-                          to={`/job-search-results?tag=${tagSlug}`}
+                          to={`/tag/${tagSlug}`}
                           className="inline-flex items-center px-3 py-1.5 bg-secondary/10 text-secondary rounded-full text-sm font-medium hover:bg-secondary/20 transition-colors"
                         >
-                          <Icon name="Tag" size={14} className="mr-1" />
+                          <Icon name="Hash" size={14} className="mr-1" />
                           {tag}
                         </Link>
                       );

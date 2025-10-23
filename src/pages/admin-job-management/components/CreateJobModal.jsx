@@ -16,6 +16,9 @@ const CreateJobModal = ({ isOpen, onClose, onSave, editJob = null, isEditMode = 
     'Web3'
   ];
 
+  // Batch years for eligibility
+  const BATCH_YEARS = ['2024', '2025', '2026', '2027'];
+
   const [formData, setFormData] = useState({
     title: '',
     url_slug: '',
@@ -35,6 +38,8 @@ const CreateJobModal = ({ isOpen, onClose, onSave, editJob = null, isEditMode = 
     eligibility_criteria: '',
     tags: [],
     customTag: '',
+    batch: [],
+    customBatch: '',
     status: 'active',
     featured: false,
     urgent: false
@@ -65,6 +70,8 @@ const CreateJobModal = ({ isOpen, onClose, onSave, editJob = null, isEditMode = 
         eligibility_criteria: editJob.eligibility_criteria || '',
         tags: editJob.tags || [],
         customTag: '',
+        batch: editJob.batch || [],
+        customBatch: '',
         status: editJob.status || 'active',
         featured: editJob.featured || false,
         urgent: editJob.urgent || false
@@ -90,6 +97,8 @@ const CreateJobModal = ({ isOpen, onClose, onSave, editJob = null, isEditMode = 
         eligibility_criteria: '',
         tags: [],
         customTag: '',
+        batch: [],
+        customBatch: '',
         status: 'active',
         featured: false,
         urgent: false
@@ -158,6 +167,35 @@ const CreateJobModal = ({ isOpen, onClose, onSave, editJob = null, isEditMode = 
     }));
   };
 
+  // Batch management handlers
+  const handleBatchToggle = (year, checked) => {
+    setFormData(prev => ({
+      ...prev,
+      batch: checked 
+        ? [...prev.batch, year]
+        : prev.batch.filter(b => b !== year)
+    }));
+  };
+
+  const handleAddCustomBatch = () => {
+    const newBatch = formData.customBatch.trim();
+    // Validate it's a year (4 digits)
+    if (newBatch && /^\d{4}$/.test(newBatch) && !formData.batch.includes(newBatch)) {
+      setFormData(prev => ({
+        ...prev,
+        batch: [...prev.batch, newBatch],
+        customBatch: ''
+      }));
+    }
+  };
+
+  const handleRemoveBatch = (batchToRemove) => {
+    setFormData(prev => ({
+      ...prev,
+      batch: prev.batch.filter(batch => batch !== batchToRemove)
+    }));
+  };
+
   const handleAddCustomTag = () => {
     const newTag = formData.customTag.trim();
     if (newTag && !formData.tags.includes(newTag)) {
@@ -219,6 +257,7 @@ const CreateJobModal = ({ isOpen, onClose, onSave, editJob = null, isEditMode = 
         deadline: formData.deadline || null,
         eligibility_criteria: formData.eligibility_criteria?.trim() || null,
         tags: formData.tags.length > 0 ? formData.tags : null,
+        batch: formData.batch.length > 0 ? formData.batch : null,
         status: formData.status,
         featured: formData.featured,
         urgent: formData.urgent
@@ -278,6 +317,8 @@ const CreateJobModal = ({ isOpen, onClose, onSave, editJob = null, isEditMode = 
       eligibility_criteria: '',
       tags: [],
       customTag: '',
+      batch: [],
+      customBatch: '',
       status: 'active',
       featured: false,
       urgent: false
@@ -564,6 +605,100 @@ const CreateJobModal = ({ isOpen, onClose, onSave, editJob = null, isEditMode = 
               
               <p className="text-xs text-text-secondary">
                 Select predefined tags or add custom ones. Tags help job seekers find relevant positions and improve search results.
+              </p>
+            </div>
+
+            {/* Batch Eligibility */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-foreground">
+                Batch Eligibility 
+                <span className="text-xs text-text-secondary ml-2">(Optional - For fresher jobs)</span>
+              </h3>
+              
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-3">
+                  Select Predefined Batch Years
+                </label>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  {BATCH_YEARS.map(year => (
+                    <label key={year} className="flex items-center space-x-2 cursor-pointer hover:bg-muted/50 p-3 rounded transition-colors border border-border">
+                      <input
+                        type="checkbox"
+                        checked={formData.batch.includes(year)}
+                        onChange={(e) => handleBatchToggle(year, e.target.checked)}
+                        className="w-4 h-4 text-primary border-border rounded focus:ring-primary"
+                      />
+                      <span className="text-sm font-medium text-foreground">{year} Batch</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+              
+              {/* Custom Batch Input */}
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  Add Custom Batch Year
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="e.g., 2028, 2029, 2030"
+                    value={formData.customBatch}
+                    onChange={(e) => handleInputChange('customBatch', e.target.value)}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleAddCustomBatch();
+                      }
+                    }}
+                    maxLength={4}
+                    className="flex-1 px-3 py-2 border border-border rounded-md bg-input text-foreground placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-micro"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleAddCustomBatch}
+                    disabled={!formData.customBatch.trim() || !/^\d{4}$/.test(formData.customBatch.trim())}
+                  >
+                    Add Batch
+                  </Button>
+                </div>
+                <p className="mt-1 text-xs text-text-secondary">
+                  Enter a 4-digit year (e.g., 2028). Custom batch years will be available for filtering.
+                </p>
+              </div>
+              
+              {formData.batch.length > 0 && (
+                <div>
+                  <label className="block text-sm font-medium text-foreground mb-2">
+                    Selected Batches ({formData.batch.length})
+                  </label>
+                  <div className="flex flex-wrap gap-2 p-3 bg-muted rounded-md">
+                    {formData.batch.sort().map(batch => (
+                      <span
+                        key={batch}
+                        className="inline-flex items-center space-x-1 px-3 py-1.5 bg-primary/10 text-primary rounded-full text-sm font-medium"
+                      >
+                        <span>{batch} Batch</span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveBatch(batch)}
+                          className="hover:text-error transition-colors ml-1"
+                          title="Remove batch"
+                        >
+                          <Icon name="X" size={14} />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                  <p className="text-xs text-text-secondary mt-2">
+                    This job will be visible in batch-specific searches and URLs (e.g., /tag/2025-batch)
+                  </p>
+                </div>
+              )}
+              
+              <p className="text-xs text-text-secondary">
+                Select which graduation batch years are eligible for this position. This helps freshers find relevant jobs.
               </p>
             </div>
 

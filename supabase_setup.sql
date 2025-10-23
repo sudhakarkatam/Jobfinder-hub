@@ -45,6 +45,8 @@ CREATE TABLE jobs (
   featured BOOLEAN DEFAULT false,
   urgent BOOLEAN DEFAULT false,
   status VARCHAR DEFAULT 'active' CHECK (status IN ('active', 'inactive', 'expired')),
+  batch TEXT[],
+  tags TEXT[],
   created_by UUID REFERENCES users(id),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -161,6 +163,8 @@ CREATE INDEX idx_jobs_location ON jobs(location);
 CREATE INDEX idx_jobs_status ON jobs(status);
 CREATE INDEX idx_jobs_featured ON jobs(featured);
 CREATE INDEX idx_jobs_created_by ON jobs(created_by);
+CREATE INDEX idx_jobs_batch ON jobs USING GIN (batch);
+CREATE INDEX idx_jobs_tags ON jobs USING GIN (tags);
 CREATE INDEX idx_applications_job_id ON applications(job_id);
 CREATE INDEX idx_applications_user_id ON applications(user_id);
 CREATE INDEX idx_users_email ON users(email);

@@ -15,6 +15,8 @@ import AdminLogin from './pages/admin-login';
 import ResumeBuilder from './pages/resume-builder';
 import BlogListing from './pages/blog-listing';
 import BlogDetail from './pages/blog-detail';
+import BatchJobs from './pages/batch-jobs';
+import TagJobs from './pages/tag-jobs';
 
 const Routes = () => {
   return (
@@ -32,6 +34,10 @@ const Routes = () => {
         <Route path="/resume-builder" element={<ResumeBuilder />} />
         <Route path="/blog" element={<BlogListing />} />
         <Route path="/blog/:slug" element={<BlogDetail />} />
+        
+        {/* Batch and Tag Routes */}
+        <Route path="/tag/:batchYear-batch" element={<BatchJobs />} />
+        <Route path="/tag/:tagName" element={<TagJobs />} />
         
         {/* Admin Login */}
         <Route path="/admin-login" element={<AdminLogin />} />

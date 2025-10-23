@@ -1,13 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
-import Input from '../../../components/ui/Input';
 
 const Sidebar = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [isSubscribed, setIsSubscribed] = useState(false);
 
   const jobCategories = [
     { id: 'technology', name: 'Technology', count: 1247, icon: 'Code' },
@@ -19,17 +16,6 @@ const Sidebar = () => {
     { id: 'banking-jobs', name: 'Banking Jobs', count: 523, icon: 'Building2' },
     { id: 'government-jobs', name: 'Government Jobs', count: 892, icon: 'Shield' }
   ];
-
-  const handleNewsletterSubmit = (e) => {
-    e?.preventDefault();
-    if (email?.trim()) {
-      setIsSubscribed(true);
-      setTimeout(() => {
-        setEmail('');
-        setIsSubscribed(false);
-      }, 3000);
-    }
-  };
 
   const handleCategoryClick = (categoryId) => {
     navigate(`/job-search-results?category=${categoryId}`);
@@ -75,52 +61,6 @@ const Sidebar = () => {
             </button>
           ))}
         </div>
-      </div>
-
-      {/* Newsletter Signup */}
-      <div className="bg-gradient-to-br from-primary/5 to-accent/5 border border-primary/20 rounded-lg p-6">
-        <div className="text-center mb-4">
-          <Icon name="Mail" size={24} className="text-primary mx-auto mb-2" />
-          <h3 className="text-lg font-semibold text-foreground mb-2">
-            Job Alerts
-          </h3>
-          <p className="text-sm text-text-secondary">
-            Get notified about new jobs matching your preferences
-          </p>
-        </div>
-
-        {!isSubscribed ? (
-          <form onSubmit={handleNewsletterSubmit} className="space-y-4">
-            <Input
-              type="email"
-              placeholder="Enter your email"
-              value={email}
-              onChange={(e) => setEmail(e?.target?.value)}
-              required
-              className="text-sm"
-            />
-            <Button
-              type="submit"
-              size="sm"
-              className="w-full"
-              iconName="Bell"
-              iconPosition="left"
-            >
-              Subscribe to Alerts
-            </Button>
-          </form>
-        ) : (
-          <div className="text-center py-4">
-            <div className="inline-flex items-center space-x-2 text-accent mb-2">
-              <Icon name="CheckCircle" size={20} />
-              <span className="font-medium">Subscribed!</span>
-            </div>
-            <p className="text-sm text-text-secondary">
-              You'll receive job alerts in your inbox
-            </p>
-          </div>
-        )}
-
       </div>
     </aside>
   );

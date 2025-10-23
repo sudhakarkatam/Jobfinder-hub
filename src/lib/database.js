@@ -91,6 +91,14 @@ export const jobsApi = {
         // Use overlaps operator to check if any variant exists in the tags array
         query = query.overlaps('tags', tagVariants)
       }
+      if (filters.batch) {
+        // Filter jobs by batch year
+        query = query.contains('batch', [filters.batch.toString()])
+      }
+      if (filters.categories && Array.isArray(filters.categories) && filters.categories.length > 0) {
+        // Filter jobs by multiple categories
+        query = query.in('category', filters.categories)
+      }
 
       const { data, error } = await query
       
