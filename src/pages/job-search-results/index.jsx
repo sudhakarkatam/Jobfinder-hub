@@ -16,6 +16,7 @@ const JobSearchResults = () => {
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
+  const [debounceTimer, setDebounceTimer] = useState(null);
   const jobsPerPage = 10;
 
   useEffect(() => {
@@ -25,6 +26,29 @@ const JobSearchResults = () => {
   useEffect(() => {
     applyFilters();
   }, [jobs, searchParams]);
+
+  // Keep local input in sync with URL (?q=)
+  useEffect(() => {
+    const urlQ = searchParams.get('q') || '';
+    setSearchQuery(urlQ);
+  }, [searchParams]);
+
+  // Debounced live search: update URL 300ms after typing
+  useEffect(() => {
+    if (debounceTimer) clearTimeout(debounceTimer);
+    const t = setTimeout(() => {
+      const q = searchQuery.trim();
+      const params = new URLSearchParams(searchParams);
+      if (q) {
+        params.set('q', q);
+      } else {
+        params.delete('q');
+      }
+      setSearchParams(params);
+    }, 300);
+    setDebounceTimer(t);
+    return () => clearTimeout(t);
+  }, [searchQuery]);
 
   const fetchData = async () => {
     try {
@@ -231,7 +255,7 @@ const JobSearchResults = () => {
     return (
       <div className="min-h-screen bg-gray-50">
         <GlobalHeader />
-        <div className="pt-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="pt-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
           <div className="text-center">
             <p className="text-gray-600">Loading jobs...</p>
           </div>
@@ -519,9 +543,13 @@ const JobSearchResults = () => {
                   </form>
                 </div>
 
-                {/* Categories Widget */}
-                <div className="bg-white rounded-lg border border-gray-200 p-6">
-                  <h3 className="text-lg font-bold text-gray-900 mb-4">Categories</h3>
+                {/* Categories Widget (collapsible on mobile) */}
+                <div className="bg-white rounded-lg border border-gray-200 p-4 md:p-6">
+                  <details className="md:open">
+                    <summary className="list-none cursor-pointer flex items-center justify-between mb-3 md:mb-4 select-none">
+                      <h3 className="text-lg font-bold text-gray-900">Categories</h3>
+                      <span className="md:hidden text-sm text-gray-500">Toggle</span>
+                    </summary>
                   <ul className="space-y-2">
                     <li>
                       <button
@@ -582,6 +610,7 @@ const JobSearchResults = () => {
                       </li>
                     ))}
                   </ul>
+                  </details>
                 </div>
 
                 {/* Recent Posts Widget */}

@@ -6,6 +6,7 @@ import '../../../styles/categories.css';
 
 const JobCategories = () => {
   const navigate = useNavigate();
+  const [isOpenMobile, setIsOpenMobile] = useState(false);
   const [categoryCounts, setCategoryCounts] = useState({
     'Technology': 0,
     'Government Jobs': 0,
@@ -101,20 +102,29 @@ const JobCategories = () => {
   ];
 
   return (
-    <section className="py-16 bg-background">
+    <section className="py-10 md:py-16 bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-foreground mb-2">
-            Explore Jobs !!
-          </h2>
-          <p className="text-text-secondary">
-            Browse opportunities by category
-          </p>
+        <div className="text-center mb-6 md:mb-12">
+          <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-2">Explore Jobs !!</h2>
+          <p className="text-text-secondary">Browse opportunities by category</p>
+        </div>
+
+        {/* Mobile Toggle */}
+        <div className="md:hidden mb-4">
+          <button
+            type="button"
+            aria-expanded={isOpenMobile}
+            onClick={() => setIsOpenMobile(o => !o)}
+            className="w-full flex items-center justify-between px-4 py-3 bg-surface border border-border rounded-lg"
+          >
+            <span className="font-medium text-foreground">Categories</span>
+            <Icon name={isOpenMobile ? 'ChevronUp' : 'ChevronDown'} size={18} className="text-text-secondary" />
+          </button>
         </div>
 
         {/* Category Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className={`${isOpenMobile ? 'grid' : 'hidden'} md:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6`}>
           {categories.map((category) => (
             <div
               key={category.id}

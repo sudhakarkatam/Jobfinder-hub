@@ -15,6 +15,7 @@ const GlobalHeader = () => {
   const [showLatestJobsDropdown, setShowLatestJobsDropdown] = useState(false);
   const [showCategoriesDropdown, setShowCategoriesDropdown] = useState(false);
   const [categories, setCategories] = useState([]);
+  const [mobileOpenDropdown, setMobileOpenDropdown] = useState(null); // 'categories' | 'latestJobs' | null
   const [allJobs, setAllJobs] = useState([]);
   const location = useLocation();
   const navigate = useNavigate();
@@ -421,40 +422,50 @@ const GlobalHeader = () => {
               {navigationItems?.map((item) => (
                 item.hasDropdown ? (
                   <div key={item.label} className="space-y-1">
-                    <div className="flex items-center space-x-3 px-4 py-3 text-base font-medium text-text-secondary min-h-[44px]">
-                      <Icon name={item.icon} size={20} />
-                      <span>{item.label}</span>
-                    </div>
-                    <div className="pl-8 space-y-1">
-                      {(item.dropdownType === 'categories' ? categories : item.submenu)?.map((subItem) => (
-                        <Link
-                          key={subItem.path}
-                          to={subItem.path}
-                          onClick={() => setIsMenuOpen(false)}
-                          className="flex items-center justify-between px-4 py-3 rounded-md text-sm text-text-secondary hover:text-foreground hover:bg-muted min-h-[44px]"
-                        >
-                          <div className="flex items-center space-x-3">
-                            <Icon name={subItem.icon} size={16} />
-                            <span>{subItem.label}</span>
-                          </div>
-                          {subItem.count !== undefined && (
-                            <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
-                              {subItem.count}
-                            </span>
-                          )}
-                        </Link>
-                      ))}
-                      {item.dropdownType === 'categories' && categories.length > 0 && (
-                        <Link
-                          to="/job-categories"
-                          onClick={() => setIsMenuOpen(false)}
-                          className="flex items-center justify-center space-x-2 px-4 py-2 text-sm text-pink-600 hover:bg-pink-50 transition-colors rounded font-medium mt-2"
-                        >
-                          <span>View All Categories</span>
-                          <Icon name="ArrowRight" size={14} />
-                        </Link>
-                      )}
-                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setMobileOpenDropdown(prev => prev === item.dropdownType ? null : item.dropdownType)}
+                      className="w-full flex items-center justify-between px-4 py-3 text-base font-medium text-text-secondary hover:text-foreground hover:bg-muted rounded-md min-h-[44px]"
+                      aria-expanded={mobileOpenDropdown === item.dropdownType}
+                    >
+                      <span className="flex items-center space-x-3">
+                        <Icon name={item.icon} size={20} />
+                        <span>{item.label}</span>
+                      </span>
+                      <Icon name="ChevronDown" size={16} className={`${mobileOpenDropdown === item.dropdownType ? 'rotate-180' : ''}`} />
+                    </button>
+                    {mobileOpenDropdown === item.dropdownType && (
+                      <div className="pl-8 space-y-1">
+                        {(item.dropdownType === 'categories' ? categories : item.submenu)?.map((subItem) => (
+                          <Link
+                            key={subItem.path}
+                            to={subItem.path}
+                            onClick={() => setIsMenuOpen(false)}
+                            className="flex items-center justify-between px-4 py-3 rounded-md text-sm text-text-secondary hover:text-foreground hover:bg-muted min-h-[44px]"
+                          >
+                            <div className="flex items-center space-x-3">
+                              <Icon name={subItem.icon} size={16} />
+                              <span>{subItem.label}</span>
+                            </div>
+                            {subItem.count !== undefined && (
+                              <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                                {subItem.count}
+                              </span>
+                            )}
+                          </Link>
+                        ))}
+                        {item.dropdownType === 'categories' && categories.length > 0 && (
+                          <Link
+                            to="/job-categories"
+                            onClick={() => setIsMenuOpen(false)}
+                            className="flex items-center justify-center space-x-2 px-4 py-2 text-sm text-pink-600 hover:bg-pink-50 transition-colors rounded font-medium mt-2"
+                          >
+                            <span>View All Categories</span>
+                            <Icon name="ArrowRight" size={14} />
+                          </Link>
+                        )}
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <Link
