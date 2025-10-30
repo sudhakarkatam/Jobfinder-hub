@@ -8,6 +8,7 @@ import AdminDashboard from './pages/admin-dashboard';
 import JobDetailView from './pages/job-detail-view';
 import AdminJobManagement from './pages/admin-job-management';
 import AdminBlogManagement from './pages/admin-blog-management';
+import AdminSettings from './pages/admin-settings';
 import JobSearchResults from './pages/job-search-results';
 import JobCategories from './pages/job-categories';
 import HomePage from './pages/home-page';
@@ -56,6 +57,11 @@ const Routes = () => {
         <Route path="/admin-blog-management" element={
           <ProtectedRoute>
             <AdminBlogManagement />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin-settings" element={
+          <ProtectedRoute>
+            <AdminSettings />
           </ProtectedRoute>
         } />
         

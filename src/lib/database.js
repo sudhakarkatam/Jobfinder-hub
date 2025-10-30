@@ -690,6 +690,31 @@ export const appSettingsApi = {
     } catch (error) {
       return handleError(error, 'updateSetting')
     }
+  },
+
+  // Create a new setting (insert or update)
+  async upsertSetting(settingKey, settingValue, description = '') {
+    try {
+      const { data, error } = await supabase
+        .from('app_settings')
+        .upsert({ 
+          setting_key: settingKey, 
+          setting_value: settingValue,
+          description: description
+        })
+        .select()
+        .single()
+      
+      if (error) throw error
+      
+      // Clear cache
+      cache.delete(`setting_${settingKey}`)
+      cache.delete('app_settings_all')
+      
+      return { data, error: null }
+    } catch (error) {
+      return handleError(error, 'upsertSetting')
+    }
   }
 }
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import GlobalHeader from '../../components/ui/GlobalHeader';
 import ResumeDashboard from './components/ResumeDashboard';
@@ -6,10 +6,54 @@ import ModernResumeBuilder from './components/ModernResumeBuilder';
 import JobMatcherView from './components/JobMatcherView';
 import ComingSoon from './ComingSoon';
 import { downloadPDF } from '../../utils/pdfGenerator';
+import { appSettingsApi } from '../../lib/database';
 
 const ResumeBuilder = () => {
-  // Resume Builder is disabled by default - show Coming Soon page
-  const isResumeBuilderEnabled = true; // Change to true to enable full builder
+  const [isResumeBuilderEnabled, setIsResumeBuilderEnabled] = useState(true);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    checkFeatureStatus();
+  }, []);
+
+  const checkFeatureStatus = async () => {
+    try {
+      const { data, error } = await appSettingsApi.getSetting('resume_builder_enabled');
+      
+      if (error) {
+        // If error (setting doesn't exist), default to enabled
+        setIsResumeBuilderEnabled(true);
+      } else {
+        // Check if setting is enabled (true or 'true')
+        const enabled = data?.setting_value === 'true' || data?.setting_value === true;
+        setIsResumeBuilderEnabled(enabled);
+      }
+    } catch (error) {
+      console.error('Error checking feature status:', error);
+      // Default to enabled if there's an error
+      setIsResumeBuilderEnabled(true);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  // Show loading state briefly
+  if (loading) {
+    return (
+      <>
+        <Helmet>
+          <title>AI Resume Builder | JobFinder Hub</title>
+        </Helmet>
+        <GlobalHeader />
+        <div className="min-h-screen bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-text-secondary">Loading...</p>
+          </div>
+        </div>
+      </>
+    );
+  }
   
   // If disabled, show Coming Soon page
   if (!isResumeBuilderEnabled) {

@@ -73,6 +73,15 @@ CREATE TABLE categories (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- App Settings Table
+CREATE TABLE app_settings (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  setting_key VARCHAR UNIQUE NOT NULL,
+  setting_value TEXT,
+  description TEXT,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- 2. ENABLE ROW LEVEL SECURITY
 -- =====================================================
 
@@ -81,6 +90,7 @@ ALTER TABLE companies ENABLE ROW LEVEL SECURITY;
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 ALTER TABLE applications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
+ALTER TABLE app_settings ENABLE ROW LEVEL SECURITY;
 
 -- 3. CREATE SECURITY POLICIES
 -- =====================================================
@@ -115,6 +125,11 @@ CREATE POLICY "Categories can be created by authenticated users" ON categories F
 CREATE POLICY "Categories can be updated by authenticated users" ON categories FOR UPDATE USING (auth.role() = 'authenticated');
 CREATE POLICY "Categories can be deleted by authenticated users" ON categories FOR DELETE USING (auth.role() = 'authenticated');
 
+-- App Settings Policies
+CREATE POLICY "Settings are viewable by everyone" ON app_settings FOR SELECT USING (true);
+CREATE POLICY "Settings can be created by authenticated users" ON app_settings FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+CREATE POLICY "Settings can be updated by authenticated users" ON app_settings FOR UPDATE USING (auth.role() = 'authenticated');
+
 -- 4. INSERT SAMPLE DATA
 -- =====================================================
 
@@ -142,6 +157,11 @@ INSERT INTO categories (name, description, icon, job_count) VALUES
 ('Marketing', 'Digital marketing and growth roles', '📈', 1),
 ('Product', 'Product management and strategy roles', '📋', 1),
 ('Finance', 'Financial analysis and accounting roles', '💰', 1);
+
+-- Sample App Settings
+INSERT INTO app_settings (setting_key, setting_value, description) VALUES
+('resume_builder_enabled', 'true', 'Enable/disable AI Resume Builder feature'),
+('maintenance_mode', 'false', 'Enable maintenance mode for the site');
 
 -- Sample Jobs
 INSERT INTO jobs (title, description, company_id, location, employment_type, experience_level, category, salary_min, salary_max, featured, urgent, created_by) VALUES
