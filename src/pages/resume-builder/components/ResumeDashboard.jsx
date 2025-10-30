@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 
-const ResumeDashboard = ({ onSelectResume, onCreateNew, onImportResume }) => {
+const ResumeDashboard = ({ onSelectResume, onCreateNew, onImportResume, onJobMatcher }) => {
   const [resumes, setResumes] = useState([
     {
       id: 1,
@@ -133,6 +133,21 @@ const ResumeDashboard = ({ onSelectResume, onCreateNew, onImportResume }) => {
               </div>
             </div>
           ))}
+
+          {/* Find Matching Jobs Card */}
+          <div className="bg-gradient-to-br from-primary/5 to-accent/5 rounded-lg border-2 border-primary/20 hover:border-primary/40 transition-colors cursor-pointer flex items-center justify-center min-h-[300px]">
+            <div className="text-center p-6" onClick={onJobMatcher}>
+              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Icon name="FileSearch" size={32} className="text-primary" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Find Matching Jobs</h3>
+              <p className="text-gray-600 text-sm">Upload your resume and discover jobs that match your skills</p>
+              <div className="mt-4 inline-flex items-center space-x-2 text-sm text-primary font-medium">
+                <Icon name="Sparkles" size={16} />
+                <span>AI-Powered Matching</span>
+              </div>
+            </div>
+          </div>
 
           {/* Create New Resume Card */}
           <div className="bg-white rounded-lg border-2 border-dashed border-gray-300 hover:border-gray-400 transition-colors cursor-pointer flex items-center justify-center min-h-[300px]">

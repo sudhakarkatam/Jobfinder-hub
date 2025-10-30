@@ -1,3 +1,5 @@
+import GithubSlugger from 'github-slugger';
+
 /**
  * Generate SEO-friendly slug from job title
  * @param {string} title - Job title
@@ -7,14 +9,16 @@
 export const slugify = (title, id = '') => {
   if (!title) return id || 'job';
   
-  // Convert to lowercase, replace spaces with hyphens, remove special characters
+  // Convert to lowercase, handle backticks first, replace spaces with hyphens, remove special characters
   let slug = title
     .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
-    .replace(/\s+/g, '-')          // Replace spaces with hyphens
-    .replace(/-+/g, '-')           // Replace multiple hyphens with single
+    .replace(/`/g, '')              // Remove backticks
+    .replace(/[()]/g, '')           // Remove parentheses
+    .replace(/[^a-z0-9\s-]/g, '')   // Remove special characters
+    .replace(/\s+/g, '-')           // Replace spaces with hyphens
+    .replace(/-+/g, '-')            // Replace multiple hyphens with single
     .trim()
-    .replace(/^-+|-+$/g, '');      // Trim hyphens from start/end
+    .replace(/^-+|-+$/g, '');       // Trim hyphens from start/end
   
   // Add first 8 chars of ID for uniqueness if provided
   if (id) {
@@ -53,5 +57,29 @@ export const getJobSlug = (job) => {
  */
 export const generateSlug = (text) => {
   return slugify(text);
+};
+
+/**
+ * Extract table of contents from markdown content
+ * @param {string} markdown - Markdown content
+ * @returns {Array<{id: string, title: string}>} - Array of TOC items
+ */
+export const extractTOC = (markdown) => {
+  if (!markdown) return [];
+  
+  const headings = [];
+  const slugger = new GithubSlugger();
+  // Match h2 headings (## Title)
+  const regex = /^##\s+(.+)$/gm;
+  let match;
+  
+  while ((match = regex.exec(markdown)) !== null) {
+    const title = match[1];
+    // Use github-slugger to generate consistent IDs with rehype-slug
+    const id = slugger.slug(title);
+    headings.push({ id, title });
+  }
+  
+  return headings;
 };
 

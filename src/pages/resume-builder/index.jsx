@@ -3,12 +3,13 @@ import { Helmet } from 'react-helmet';
 import GlobalHeader from '../../components/ui/GlobalHeader';
 import ResumeDashboard from './components/ResumeDashboard';
 import ModernResumeBuilder from './components/ModernResumeBuilder';
+import JobMatcherView from './components/JobMatcherView';
 import ComingSoon from './ComingSoon';
 import { downloadPDF } from '../../utils/pdfGenerator';
 
 const ResumeBuilder = () => {
   // Resume Builder is disabled by default - show Coming Soon page
-  const isResumeBuilderEnabled = false; // Change to true to enable full builder
+  const isResumeBuilderEnabled = true; // Change to true to enable full builder
   
   // If disabled, show Coming Soon page
   if (!isResumeBuilderEnabled) {
@@ -16,7 +17,7 @@ const ResumeBuilder = () => {
   }
   
   // Full builder code below (only runs if enabled)
-  const [currentView, setCurrentView] = useState('dashboard'); // 'dashboard' or 'builder'
+  const [currentView, setCurrentView] = useState('dashboard'); // 'dashboard', 'builder', or 'job-matcher'
   const [selectedResume, setSelectedResume] = useState(null);
   const [resumeData, setResumeData] = useState({
     title: "Sudhakar's Resume",
@@ -214,6 +215,10 @@ const ResumeBuilder = () => {
     setSelectedResume(null);
   };
 
+  const handleJobMatcher = () => {
+    setCurrentView('job-matcher');
+  };
+
   const handleUpdateResume = (updatedData) => {
     setResumeData(updatedData);
   };
@@ -241,6 +246,15 @@ const ResumeBuilder = () => {
           onSelectResume={handleSelectResume}
           onCreateNew={handleCreateNew}
           onImportResume={handleImportResume}
+          onJobMatcher={handleJobMatcher}
+        />
+      );
+    }
+
+    if (currentView === 'job-matcher') {
+      return (
+        <JobMatcherView
+          onBack={handleBackToDashboard}
         />
       );
     }
@@ -264,6 +278,7 @@ const ResumeBuilder = () => {
       </Helmet>
       
       {currentView === 'dashboard' && <GlobalHeader />}
+      {currentView === 'job-matcher' && <GlobalHeader />}
       
       {renderContent()}
 

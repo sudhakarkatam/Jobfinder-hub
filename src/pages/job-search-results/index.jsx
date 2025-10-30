@@ -72,6 +72,29 @@ const JobSearchResults = () => {
     const experience = searchParams.get('experience');
     const type = searchParams.get('type');
     const tag = searchParams.get('tag');
+    const matcher = searchParams.get('matcher');
+    const skills = searchParams.get('skills');
+
+    // If coming from resume matcher, filter to tech jobs only
+    if (matcher === 'true') {
+      filtered = filtered.filter(job => {
+        const techCategories = ['technology', 'development', 'it', 'software'];
+        return techCategories.some(cat => 
+          job.category?.toLowerCase().includes(cat)
+        );
+      });
+
+      // If skills are provided, prioritize jobs matching those skills
+      if (skills) {
+        const skillList = skills.split(',').map(s => s.trim().toLowerCase());
+        filtered = filtered.map(job => {
+          const jobText = `${job.title} ${job.description}`.toLowerCase();
+          const matchCount = skillList.filter(skill => jobText.includes(skill)).length;
+          return { ...job, skillMatchCount: matchCount };
+        })
+        .sort((a, b) => b.skillMatchCount - a.skillMatchCount);
+      }
+    }
 
     if (query) {
       filtered = filtered.filter(job => {
@@ -233,12 +256,44 @@ const JobSearchResults = () => {
             <div className="lg:col-span-2">
               {/* Page Title */}
               <div className="mb-8">
-                <h1 className="text-4xl font-bold text-gray-900 mb-2">
-                  {searchParams.get('q') ? `Results for "${searchParams.get('q')}"` : 'All Jobs'}
-                </h1>
-                <p className="text-gray-600">
-                  {filteredJobs.length} {filteredJobs.length === 1 ? 'job' : 'jobs'} found
-                </p>
+                {searchParams.get('matcher') === 'true' ? (
+                  <>
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                          <Icon name="Sparkles" size={24} className="text-primary" />
+                        </div>
+                        <div>
+                          <h1 className="text-4xl font-bold text-gray-900">
+                            Jobs Matching Your Resume
+                          </h1>
+                          <p className="text-gray-600 mt-1">
+                            AI-powered matches based on your skills and experience
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => navigate('/resume-builder')}
+                        className="inline-flex items-center space-x-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
+                      >
+                        <Icon name="Upload" size={16} />
+                        <span>Upload New Resume</span>
+                      </button>
+                    </div>
+                    <p className="text-gray-600">
+                      {filteredJobs.length} {filteredJobs.length === 1 ? 'job' : 'jobs'} matched
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <h1 className="text-4xl font-bold text-gray-900 mb-2">
+                      {searchParams.get('q') ? `Results for "${searchParams.get('q')}"` : 'All Jobs'}
+                    </h1>
+                    <p className="text-gray-600">
+                      {filteredJobs.length} {filteredJobs.length === 1 ? 'job' : 'jobs'} found
+                    </p>
+                  </>
+                )}
               </div>
 
               {/* Active Filters */}

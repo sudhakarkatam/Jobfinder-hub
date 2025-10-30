@@ -62,19 +62,13 @@ const LatestJobsCarousel = () => {
       setLoading(true);
       const { data, error } = await jobsApi.getJobs();
       if (data) {
-        // Get jobs from the last 7 days
-        const oneWeekAgo = new Date();
-        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-        
-        // Filter jobs from this week, remove duplicates, and get max 20
+        // Show last 20 jobs regardless of date
         const uniqueJobs = [];
         const seenIds = new Set();
         
         for (const job of data) {
-          const jobDate = new Date(job.created_at);
-          
-          // Only include jobs from this week
-          if (jobDate >= oneWeekAgo && !seenIds.has(job.id)) {
+          // No date filter - show all recent jobs
+          if (!seenIds.has(job.id)) {
             seenIds.add(job.id);
             uniqueJobs.push({
               id: job.id,

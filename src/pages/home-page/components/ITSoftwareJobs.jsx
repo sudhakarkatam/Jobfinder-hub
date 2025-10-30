@@ -13,7 +13,7 @@ const ITSoftwareJobs = () => {
   const [allJobs, setAllJobs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 6;
+  const itemsPerPage = 20;
   const [bookmarkedJobs, setBookmarkedJobs] = useState(new Set());
 
   useEffect(() => {
@@ -127,31 +127,14 @@ const ITSoftwareJobs = () => {
     navigate(`/job-detail-view/${slug}#apply`);
   };
 
-  const JobSkeleton = () => (
-    <div className="bg-surface border border-border rounded-lg p-6 animate-pulse">
-      <div className="flex items-start justify-between mb-4">
-        <div className="w-12 h-12 bg-muted rounded-lg"></div>
-        <div className="w-8 h-8 bg-muted rounded-full"></div>
-      </div>
-      <div className="space-y-3">
-        <div className="h-5 bg-muted rounded w-3/4"></div>
-        <div className="h-4 bg-muted rounded w-1/2"></div>
-        <div className="h-4 bg-muted rounded w-2/3"></div>
-        <div className="flex space-x-2">
-          <div className="h-6 bg-muted rounded w-16"></div>
-          <div className="h-6 bg-muted rounded w-16"></div>
-        </div>
-      </div>
-    </div>
-  );
 
   return (
     <section className="py-16 bg-muted/20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between mb-12">
           <div>
-            <h2 className="text-3xl font-bold text-foreground mb-2">IT/Software Jobs</h2>
-            <p className="text-text-secondary">Explore technology and development opportunities</p>
+            <h2 className="text-3xl font-bold text-foreground mb-2">Trending IT/Software Jobs</h2>
+            <p className="text-text-secondary">Discover the most popular technology and development opportunities</p>
           </div>
           <Button
             variant="outline"
@@ -163,117 +146,99 @@ const ITSoftwareJobs = () => {
           </Button>
         </div>
 
-        {/* Jobs Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        {/* Jobs List */}
+        <div className="flex flex-col space-y-4 mb-8">
           {paginatedJobs?.map((job) => (
-                   <div
-                     key={job?.id}
-                     onClick={() => handleJobClick(job)}
-                     className="bg-surface border border-border rounded-lg p-6 hover:shadow-md transition-all duration-300 cursor-pointer group relative"
-                   >
-              {/* New Badge */}
-              {job?.isNew && (
-                <div className="absolute top-4 right-4 bg-accent text-accent-foreground px-2 py-1 rounded-full text-xs font-semibold">
-                  NEW
-                </div>
-              )}
-
-              {/* Company Logo & Bookmark */}
-              <div className="flex items-start justify-between mb-4">
-                <div className="w-12 h-12 rounded-lg overflow-hidden bg-muted flex-shrink-0">
-                  <Image
-                    src={job?.logo}
-                    alt={`${job?.company} logo`}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <button
-                  onClick={(e) => handleBookmark(job?.id, e)}
-                  className={`p-2 rounded-full transition-all duration-300 ${
-                    bookmarkedJobs?.has(job?.id)
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted text-text-secondary hover:bg-primary hover:text-primary-foreground'
-                  }`}
-                >
-                  <Icon 
-                    name={bookmarkedJobs?.has(job?.id) ? "Bookmark" : "BookmarkPlus"} 
-                    size={16} 
-                    className={bookmarkedJobs?.has(job?.id) ? "fill-current" : ""}
-                  />
-                </button>
+            <div
+              key={job?.id}
+              onClick={() => handleJobClick(job)}
+              className="flex items-center gap-4 p-4 bg-surface border border-border rounded-lg hover:shadow-lg transition-all duration-300 cursor-pointer group"
+            >
+              {/* Company Logo */}
+              <div className="w-12 h-12 flex-shrink-0 rounded-lg overflow-hidden bg-muted">
+                <Image
+                  src={job?.logo}
+                  alt={`${job?.company} logo`}
+                  className="w-full h-full object-cover"
+                />
               </div>
 
-              {/* Job Details */}
-              <div className="mb-4">
-                <h3 className="text-lg font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
+              {/* Job Details - All Inline */}
+              <div className="flex-1 min-w-0">
+                <h3 className="text-lg font-semibold text-foreground group-hover:text-primary transition-colors mb-1">
                   {job?.title}
                 </h3>
-                <div className="flex items-center space-x-2 text-text-secondary mb-2">
-                  <Icon name="Building2" size={14} />
-                  <span className="text-sm">{job?.company}</span>
-                </div>
-                <div className="flex items-center space-x-2 text-text-secondary mb-2">
-                  <Icon name="MapPin" size={14} />
-                  <span className="text-sm">{job?.location}</span>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <div className="flex items-center space-x-2 text-text-secondary">
-                    <Icon name="Clock" size={14} />
-                    <span>{job?.type}</span>
-                  </div>
-                  <div className="text-primary font-semibold">
-                    {job?.salary}
-                  </div>
-                </div>
-              </div>
-
-              {/* Description */}
-              <p className="text-sm text-text-secondary mb-4 line-clamp-2">
-                {job?.description}
-              </p>
-
-              {/* Skills */}
-              <div className="flex flex-wrap gap-2 mb-4">
-                {job?.skills?.slice(0, 2)?.map((skill, index) => (
-                  <span
-                    key={index}
-                    className="px-2 py-1 bg-secondary/10 text-secondary text-xs rounded-full"
-                  >
-                    {skill}
-                  </span>
-                ))}
-                {job?.skills?.length > 2 && (
-                  <span className="px-2 py-1 bg-muted text-text-secondary text-xs rounded-full">
-                    +{job?.skills?.length - 2} more
-                  </span>
-                )}
-              </div>
-
-              {/* Footer */}
-              <div className="flex items-center justify-between pt-4 border-t border-border">
-                <div className="flex items-center space-x-2 text-xs text-text-secondary">
-                  <Icon name="Calendar" size={12} />
+                <div className="flex items-center gap-2 text-sm text-text-secondary flex-wrap">
+                  <span className="font-medium">{job?.company}</span>
+                  <span>•</span>
+                  <span>{job?.location}</span>
+                  <span>•</span>
+                  <span>{job?.type}</span>
+                  <span>•</span>
+                  <span className="text-primary font-semibold">{job?.salary}</span>
+                  {job?.skills?.length > 0 && (
+                    <>
+                      <span>•</span>
+                      <div className="flex items-center gap-1">
+                        {job?.skills?.slice(0, 2)?.map((skill, idx) => (
+                          <span
+                            key={idx}
+                            className="px-2 py-1 bg-primary/10 text-primary text-xs rounded-full"
+                          >
+                            {skill}
+                          </span>
+                        ))}
+                        {job?.skills?.length > 2 && (
+                          <span className="text-xs text-text-secondary">
+                            +{job?.skills?.length - 2} more
+                          </span>
+                        )}
+                      </div>
+                    </>
+                  )}
+                  <span>•</span>
                   <span>{job?.postedDate}</span>
                 </div>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={(e) => handleApplyClick(job, e)}
-                  iconName="ArrowRight"
-                  iconPosition="right"
-                >
-                  Apply
-                </Button>
               </div>
+
+              {/* Apply Button */}
+              <Button
+                size="sm"
+                onClick={(e) => handleApplyClick(job, e)}
+                className="flex-shrink-0 group-hover:shadow-md"
+              >
+                Apply
+              </Button>
             </div>
           ))}
 
           {/* Loading Skeletons */}
           {loading && (
             <>
-              <JobSkeleton />
-              <JobSkeleton />
-              <JobSkeleton />
+              <div className="flex items-center gap-4 p-4 bg-surface border border-border rounded-lg animate-pulse">
+                <div className="w-12 h-12 bg-muted rounded-lg"></div>
+                <div className="flex-1 space-y-2">
+                  <div className="h-5 bg-muted rounded w-3/4"></div>
+                  <div className="h-4 bg-muted rounded w-1/2"></div>
+                </div>
+                <div className="w-16 h-8 bg-muted rounded"></div>
+              </div>
+              <div className="flex items-center gap-4 p-4 bg-surface border border-border rounded-lg animate-pulse">
+                <div className="w-12 h-12 bg-muted rounded-lg"></div>
+                <div className="flex-1 space-y-2">
+                  <div className="h-5 bg-muted rounded w-3/4"></div>
+                  <div className="h-4 bg-muted rounded w-1/2"></div>
+                </div>
+                <div className="w-16 h-8 bg-muted rounded"></div>
+              </div>
+              <div className="flex items-center gap-4 p-4 bg-surface border border-border rounded-lg animate-pulse">
+                <div className="w-12 h-12 bg-muted rounded-lg"></div>
+                <div className="flex-1 space-y-2">
+                  <div className="h-5 bg-muted rounded w-3/4"></div>
+                  <div className="h-4 bg-muted rounded w-1/2"></div>
+                </div>
+                <div className="w-16 h-8 bg-muted rounded"></div>
+              </div>
             </>
           )}
         </div>
