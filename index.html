@@ -5,6 +5,14 @@
   <meta charset="utf-8" />
   <title>jobboard-pro</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <script>
+    // Fix high DPI display scaling
+    const viewport = document.querySelector('meta[name="viewport"]');
+    if (window.devicePixelRatio > 1) {
+      const scale = 1 / window.devicePixelRatio;
+      viewport.setAttribute('content', `width=device-width, initial-scale=${scale}, maximum-scale=${scale}, user-scalable=no`);
+    }
+  </script>
   <meta name="theme-color" content="#000000" />
   <meta name="description" content="Web site created using create-react-app" />
   <link rel="icon" href="/favicon.ico" />
