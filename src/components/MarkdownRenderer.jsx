@@ -124,7 +124,7 @@ const MarkdownRenderer = ({ markdown = '', isExcerpt = false }) => {
             <div className="relative group my-6">
               <pre
                 {...props}
-                className="relative bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto border border-gray-700"
+                className="relative bg-gray-900 text-gray-100 p-3 rounded-lg overflow-x-auto border border-gray-700"
               >
                 {children}
               </pre>
@@ -145,32 +145,42 @@ const MarkdownRenderer = ({ markdown = '', isExcerpt = false }) => {
           return <code className={className} {...props}>{children}</code>;
         },
         h2: ({ children, ...props }) => (
-          <h2 className="text-3xl font-bold mt-8 mb-4 text-foreground border-b border-gray-200 pb-2 first:mt-0" {...props}>
+          <h2 className="text-2xl font-bold mt-6 mb-3 text-foreground border-b border-gray-200 pb-2 first:mt-0" {...props}>
             {children}
           </h2>
         ),
         h3: ({ children, ...props }) => (
-          <h3 className="text-2xl font-bold mt-6 mb-3 text-foreground" {...props}>
+          <h3 className="text-xl font-bold mt-5 mb-2 text-foreground" {...props}>
             {children}
           </h3>
         ),
         h4: ({ children, ...props }) => (
-          <h4 className="text-xl font-bold mt-4 mb-2 text-foreground" {...props}>
+          <h4 className="text-lg font-bold mt-4 mb-2 text-foreground" {...props}>
             {children}
           </h4>
         ),
+        h5: ({ children, ...props }) => (
+          <h5 className="text-base font-bold mt-3 mb-2 text-foreground" {...props}>
+            {children}
+          </h5>
+        ),
+        h6: ({ children, ...props }) => (
+          <h6 className="text-sm font-bold mt-3 mb-2 text-foreground" {...props}>
+            {children}
+          </h6>
+        ),
         p: ({ children, ...props }) => (
-          <p className="mb-4 text-foreground leading-7" {...props}>
+          <p className="mb-3 text-foreground leading-7" {...props}>
             {children}
           </p>
         ),
         ul: ({ children, ...props }) => (
-          <ul className="list-disc list-inside mb-4 space-y-2 text-foreground ml-4" {...props}>
+          <ul className="list-disc list-inside mb-3 space-y-2 text-foreground ml-4" {...props}>
             {children}
           </ul>
         ),
         ol: ({ children, ...props }) => (
-          <ol className="list-decimal list-inside mb-4 space-y-2 text-foreground ml-4" {...props}>
+          <ol className="list-decimal list-inside mb-3 space-y-2 text-foreground ml-4" {...props}>
             {children}
           </ol>
         ),
@@ -195,12 +205,12 @@ const MarkdownRenderer = ({ markdown = '', isExcerpt = false }) => {
           </thead>
         ),
         th: ({ children, ...props }) => (
-          <th className="border border-gray-300 px-4 py-3 text-left font-semibold text-foreground" {...props}>
+          <th className="border border-gray-300 px-3 py-2 text-left font-semibold text-foreground" {...props}>
             {children}
           </th>
         ),
         td: ({ children, ...props }) => (
-          <td className="border border-gray-300 px-4 py-3 text-foreground" {...props}>
+          <td className="border border-gray-300 px-3 py-2 text-foreground" {...props}>
             {children}
           </td>
         ),

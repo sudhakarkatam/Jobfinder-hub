@@ -172,7 +172,7 @@ const FeaturedJobs = () => {
             >
               <Icon name="TrendingUp" size={24} className="text-accent fill-current" />
             </motion.div>
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+            <h2 className="text-2xl md:text-3xl font-bold text-foreground bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
               Trending Jobs
             </h2>
             <motion.div

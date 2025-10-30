@@ -168,7 +168,7 @@ const LatestJobsCarousel = () => {
                      </div>
                      <span className="text-gray-600">{jobs.length} new positions</span>
                    </div>
-                   <h2 className="text-3xl font-bold text-gray-900 mt-2">
+                   <h2 className="text-2xl font-bold text-gray-900 mt-2">
                      Fresh Opportunities Added This Week
                    </h2>
                  </div>
