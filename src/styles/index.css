@@ -1,5 +1,9 @@
 html {
   font-size: 16px; /* Explicit base font size */
+  /* Fix for high DPI displays - prevent automatic scaling */
+  -webkit-text-size-adjust: 100%;
+  -moz-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 body {
