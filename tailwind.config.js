@@ -13,7 +13,11 @@ export default {
       center: true,
       padding: "2rem",
       screens: {
-        "2xl": "1400px",
+        sm: '640px',
+        md: '768px',
+        lg: '1024px',
+        xl: '1280px',
+        '2xl': '1400px',
       },
     },
     extend: {
@@ -74,6 +78,9 @@ export default {
         lg: "var(--radius-lg)",
         md: "var(--radius-md)",
         sm: "var(--radius-sm)",
+      },
+      fontSize: {
+        base: ['16px', '24px'], // Explicit base font size and line height
       },
       fontFamily: {
         sans: ['Inter', 'sans-serif'],
