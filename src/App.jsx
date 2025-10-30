@@ -3,7 +3,9 @@ import Routes from "./Routes";
 
 function App() {
   return (
-    <Routes />
+    <div className="max-w-7xl mx-auto">
+      <Routes />
+    </div>
   );
 }
 
