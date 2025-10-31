@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import GlobalHeader from '../../components/ui/GlobalHeader';
 import Icon from '../../components/AppIcon';
 import { jobsApi, categoriesApi } from '../../lib/database.js';
 import { calculateSimilarity } from '../../utils/fuzzyMatch';
+import MobileBottomBar from '../../components/ui/MobileBottomBar';
 
 const JobSearchResults = () => {
   const navigate = useNavigate();
@@ -17,6 +18,11 @@ const JobSearchResults = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const [debounceTimer, setDebounceTimer] = useState(null);
+  const [cardDensity, setCardDensity] = useState(() => {
+    const saved = localStorage.getItem('jobCardDensity');
+    return saved || 'comfortable';
+  });
+  const resultsHeadingRef = React.useRef(null);
   const jobsPerPage = 10;
 
   useEffect(() => {
@@ -187,8 +193,18 @@ const JobSearchResults = () => {
       const params = new URLSearchParams(searchParams);
       params.set('q', searchQuery.trim());
       setSearchParams(params);
+      // Move focus to results heading after search
+      setTimeout(() => {
+        resultsHeadingRef.current?.focus();
+        resultsHeadingRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
     }
   };
+
+  // Save card density preference
+  useEffect(() => {
+    localStorage.setItem('jobCardDensity', cardDensity);
+  }, [cardDensity]);
 
   const handleCategoryClick = (categoryName) => {
     const params = new URLSearchParams();
@@ -298,7 +314,7 @@ const JobSearchResults = () => {
                       </div>
                       <button
                         onClick={() => navigate('/resume-builder')}
-                        className="inline-flex items-center space-x-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
+                        className="inline-flex items-center space-x-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
                       >
                         <Icon name="Upload" size={16} />
                         <span>Upload New Resume</span>
@@ -310,12 +326,48 @@ const JobSearchResults = () => {
                   </>
                 ) : (
                   <>
-                    <h1 className="text-4xl font-bold text-gray-900 mb-2">
-                      {searchParams.get('q') ? `Results for "${searchParams.get('q')}"` : 'All Jobs'}
-                    </h1>
-                    <p className="text-gray-600">
-                      {filteredJobs.length} {filteredJobs.length === 1 ? 'job' : 'jobs'} found
-                    </p>
+                    <div className="flex items-center justify-between flex-wrap gap-4 mb-4">
+                      <div className="flex-1 min-w-0">
+                        <h1 
+                          ref={resultsHeadingRef}
+                          tabIndex={-1}
+                          className="text-4xl font-bold text-gray-900 mb-2 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded"
+                        >
+                          {searchParams.get('q') ? `Results for "${searchParams.get('q')}"` : 'All Jobs'}
+                        </h1>
+                        <p className="text-gray-700">
+                          {filteredJobs.length} {filteredJobs.length === 1 ? 'job' : 'jobs'} found
+                        </p>
+                      </div>
+                      
+                      {/* Card Density Toggle - Desktop Only */}
+                      <div className="hidden md:flex items-center gap-2 bg-gray-100 rounded-lg p-1">
+                        <button
+                          onClick={() => setCardDensity('comfortable')}
+                          className={`px-3 py-1.5 text-sm font-medium rounded transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
+                            cardDensity === 'comfortable'
+                              ? 'bg-white text-gray-900 shadow-sm'
+                              : 'text-gray-600 hover:text-gray-900'
+                          }`}
+                          aria-label="Comfortable view"
+                        >
+                          <Icon name="LayoutGrid" size={16} className="inline mr-1" />
+                          Comfortable
+                        </button>
+                        <button
+                          onClick={() => setCardDensity('compact')}
+                          className={`px-3 py-1.5 text-sm font-medium rounded transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
+                            cardDensity === 'compact'
+                              ? 'bg-white text-gray-900 shadow-sm'
+                              : 'text-gray-600 hover:text-gray-900'
+                          }`}
+                          aria-label="Compact view"
+                        >
+                          <Icon name="Rows" size={16} className="inline mr-1" />
+                          Compact
+                        </button>
+                      </div>
+                    </div>
                   </>
                 )}
               </div>
@@ -371,14 +423,19 @@ const JobSearchResults = () => {
               )}
 
               {/* Job Cards */}
-              <div className="space-y-6">
+              <div className={cardDensity === 'compact' ? 'space-y-3' : 'space-y-6'}>
                 {currentJobs.length > 0 ? (
                   currentJobs.map((job) => (
                     <article
                       key={job.id}
-                      className="bg-white rounded-lg border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow duration-300"
+                      className={`bg-white rounded-lg border border-gray-200 overflow-hidden transition-all duration-300 focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2 ${
+                        cardDensity === 'compact' 
+                          ? 'p-4 hover:shadow-md hover:-translate-y-0.5' 
+                          : 'p-6 hover:shadow-lg hover:-translate-y-1'
+                      }`}
+                      tabIndex={0}
                     >
-                      <div className="p-6">
+                      <div className={cardDensity === 'compact' ? '' : ''}>
                         {/* Badge */}
                         {job.experience_level && (
                           <span className="inline-block px-3 py-1 bg-pink-100 text-pink-600 text-xs font-semibold rounded-full mb-3">
@@ -387,17 +444,17 @@ const JobSearchResults = () => {
                         )}
 
                         {/* Job Title */}
-                        <h2 className="text-2xl font-bold text-gray-900 mb-3 hover:text-pink-600 transition-colors">
+                        <h2 className={`${cardDensity === 'compact' ? 'text-xl mb-2' : 'text-2xl mb-3'} font-bold text-gray-900`}>
                           <button
                             onClick={() => navigate(`/job-detail-view/${job.id}`)}
-                            className="text-left w-full"
+                            className="text-left w-full hover:text-pink-600 transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 rounded"
                           >
                             {job.title}
                           </button>
                         </h2>
 
                         {/* Company & Meta Info */}
-                        <div className="flex items-center gap-4 text-sm text-gray-600 mb-4">
+                        <div className={`flex items-center gap-4 text-sm ${cardDensity === 'compact' ? 'text-gray-600 mb-2' : 'text-gray-700 mb-4'}`}>
                           <div className="flex items-center gap-1">
                             <Icon name="Building2" size={14} />
                             <span>{job.company}</span>
@@ -415,9 +472,11 @@ const JobSearchResults = () => {
                         </div>
 
                         {/* Description Excerpt */}
-                        <p className="text-gray-700 mb-4 leading-relaxed">
-                          {formatExcerpt(job.description)}
-                        </p>
+                        {cardDensity === 'comfortable' && (
+                          <p className="text-gray-700 mb-4 leading-relaxed">
+                            {formatExcerpt(job.description)}
+                          </p>
+                        )}
 
                         {/* Salary */}
                         {job.salary_min && job.salary_max && (
@@ -429,14 +488,14 @@ const JobSearchResults = () => {
                         {/* Read More */}
                         <button
                           onClick={() => navigate(`/job-detail-view/${job.id}`)}
-                          className="text-pink-600 hover:text-pink-700 font-medium text-sm inline-flex items-center gap-1"
+                          className="text-pink-600 hover:text-pink-700 font-medium text-sm inline-flex items-center gap-1 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 rounded"
                         >
                           Read More
                           <Icon name="ArrowRight" size={14} />
                         </button>
 
                         {/* Footer - Author & Date */}
-                        <div className="mt-6 pt-4 border-t border-gray-100 flex items-center gap-3">
+                        <div className={`${cardDensity === 'compact' ? 'mt-3 pt-3' : 'mt-6 pt-4'} border-t border-gray-100 flex items-center gap-3`}>
                           <div className="w-8 h-8 bg-gradient-to-br from-pink-400 to-purple-500 rounded-full flex items-center justify-center">
                             <Icon name="Briefcase" size={14} className="text-white" />
                           </div>
@@ -536,7 +595,7 @@ const JobSearchResults = () => {
                     />
                     <button
                       type="submit"
-                      className="w-full px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-colors font-medium"
+                      className="w-full px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition-colors font-medium focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2"
                     >
                       Search
                     </button>
@@ -633,7 +692,13 @@ const JobSearchResults = () => {
             </div>
           </div>
         </div>
+        
+        {/* Mobile Bottom Bar */}
+        <MobileBottomBar />
       </div>
+      
+      {/* Spacer for mobile bottom bar */}
+      <div className="md:hidden h-16" />
     </>
   );
 };
