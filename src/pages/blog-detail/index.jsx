@@ -15,6 +15,7 @@ const BlogDetail = () => {
   const [activeSection, setActiveSection] = useState('');
   const [toc, setToc] = useState([]);
   const contentRef = useRef(null);
+  const tocContainerRef = useRef(null);
 
   useEffect(() => {
     fetchPost();
@@ -81,9 +82,9 @@ const BlogDetail = () => {
     alert('Link copied to clipboard!');
   };
 
-  // Track active section on scroll
+  // Track active section on scroll and auto-scroll TOC
   useEffect(() => {
-    if (!toc.length) return;
+    if (!toc.length || !tocContainerRef.current) return;
 
     const handleScroll = () => {
       const sections = toc.map(t => document.getElementById(t.id)).filter(Boolean);
@@ -93,6 +94,29 @@ const BlogDetail = () => {
         const section = sections[i];
         if (section.offsetTop <= scrollPosition) {
           setActiveSection(section.id);
+          
+          // Auto-scroll TOC to keep active item visible
+          const activeTocButton = tocContainerRef.current?.querySelector(`button[data-section-id="${section.id}"]`);
+          if (activeTocButton && tocContainerRef.current) {
+            const container = tocContainerRef.current;
+            const containerTop = container.scrollTop;
+            const containerBottom = containerTop + container.clientHeight;
+            const buttonTop = activeTocButton.offsetTop;
+            const buttonBottom = buttonTop + activeTocButton.offsetHeight;
+
+            // Scroll if active button is outside visible area
+            if (buttonTop < containerTop) {
+              container.scrollTo({
+                top: buttonTop - 10,
+                behavior: 'smooth'
+              });
+            } else if (buttonBottom > containerBottom) {
+              container.scrollTo({
+                top: buttonBottom - container.clientHeight + 10,
+                behavior: 'smooth'
+              });
+            }
+          }
           break;
         }
       }
@@ -116,6 +140,16 @@ const BlogDetail = () => {
         behavior: 'smooth',
       });
       setActiveSection(id);
+    }
+  };
+
+  // Scroll TOC to top
+  const scrollTocToTop = () => {
+    if (tocContainerRef.current) {
+      tocContainerRef.current.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
     }
   };
 
@@ -297,13 +331,28 @@ const BlogDetail = () => {
               {toc.length > 0 && (
                 <aside className="lg:w-80 flex-shrink-0">
                   <div className="sticky top-24 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                    <h3 className="text-lg font-bold text-foreground mb-4 pb-3 border-b border-gray-200">
-                      Table of Contents
-                    </h3>
-                    <nav className="space-y-1">
+                    <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-200">
+                      <h3 className="text-lg font-bold text-foreground">
+                        Table of Contents
+                      </h3>
+                      <button
+                        onClick={scrollTocToTop}
+                        className="p-1.5 text-text-secondary hover:text-primary hover:bg-gray-100 rounded-md transition-colors"
+                        title="Scroll to top"
+                        aria-label="Scroll Table of Contents to top"
+                      >
+                        <Icon name="ArrowUp" size={16} />
+                      </button>
+                    </div>
+                    <nav 
+                      ref={tocContainerRef}
+                      className="space-y-1 max-h-[calc(100vh-250px)] overflow-y-auto pr-2"
+                      style={{ scrollBehavior: 'smooth' }}
+                    >
                       {toc.map((item, index) => (
                         <button
                           key={item.id}
+                          data-section-id={item.id}
                           onClick={() => scrollToSection(item.id)}
                           className={`w-full text-left px-3 py-2 rounded-md transition-all duration-200 text-sm ${
                             activeSection === item.id
